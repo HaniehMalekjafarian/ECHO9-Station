@@ -1,0 +1,13 @@
+
+# Local build and temporary files
+build/
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+.env
+.env.local
+
+# Never publish private instructor materials
+examiner/
+instructor/
