@@ -5,42 +5,67 @@
 <title>ECHO-9 · Live Station View</title>
 <style>
 :root{color-scheme:dark;--bg:#050e19;--panel:#111d2f;--stroke:#2b3d56;--mint:#69e5c5;--blue:#7db1ff;--text:#edf5ff;--muted:#9cadc3;--orange:#ffbc78;--pink:#ef8da5}*{box-sizing:border-box}body{margin:0;color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at 52% -30%,#23456b 0%,#091522 44%,#060e18 100%);min-height:100vh}a{color:inherit;text-decoration:none}button{font:inherit}.shell{max-width:1560px;margin:0 auto;padding:25px 28px 40px}.header{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:19px}.eyebrow{font:700 11px ui-monospace,SFMono-Regular,monospace;letter-spacing:3px;color:var(--blue)}h1{font-size:29px;margin:5px 0 4px;line-height:1.05;letter-spacing:-1px}.subtitle{color:var(--muted);font-size:13px;margin:0}.nav{display:flex;align-items:center;gap:9px}.pill{font:700 11px ui-monospace,monospace;letter-spacing:.4px;border:1px solid #35506e;border-radius:10px;padding:11px 13px;background:#182943}.pill.sel{background:#325f97;border-color:#80b8ff;color:white}.pill:hover{border-color:#8abaff}.live{display:flex;gap:8px;align-items:center;color:#b5efe0;font:700 11px ui-monospace,monospace;padding:10px 12px;border:1px solid #31675c;border-radius:11px;background:#0e302e}.light{width:8px;height:8px;background:#48eab4;border-radius:50%;box-shadow:0 0 12px #48eab4}.light.off{background:#d96d79;box-shadow:0 0 12px #d96d79}.grid{display:grid;grid-template-columns:minmax(0,1fr) 306px;gap:17px}.stage,.pane{align-self:start;border:1px solid #293d57;border-radius:17px;background:#101b2d;box-shadow:0 18px 70px #03070e50;overflow:hidden}.stageTop{height:55px;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 18px;border-bottom:1px solid #273b51}.sectiontag{font:700 11px ui-monospace,monospace;letter-spacing:2px;color:#a8bcd4}.stageMeta{font:11px ui-monospace,monospace;color:#b5c8de}.canvaswrap{position:relative;padding:14px 14px 10px;background:radial-gradient(circle at 53% 43%,#162940,#0a1424 80%)}#station{display:block;width:100%;height:auto;aspect-ratio:960/620;image-rendering:pixelated;border:1px solid #334c66;border-radius:10px;background:#091828}.overlay{position:absolute;top:30px;left:30px;pointer-events:none;background:#071526dd;border:1px solid #29415c;border-radius:6px;padding:9px 11px;backdrop-filter:blur(4px)}.overlay strong{display:block;color:#b6d9ff;font:800 11px ui-monospace,monospace;letter-spacing:1.2px}.overlay span{font:11px ui-monospace,monospace;color:#96adc7}.legend{display:flex;gap:22px;flex-wrap:wrap;padding:9px 18px 15px;font-size:11px;color:#a7b9ce}.leg{display:flex;align-items:center;gap:7px}.swatch{width:9px;height:9px;display:inline-block;border-radius:2px}.panes{display:flex;flex-direction:column;gap:16px}.pane{padding:17px}.pane h2{font-size:14px;margin:4px 0 14px}.row{display:flex;align-items:center;justify-content:space-between;gap:9px}.label{font:700 10px ui-monospace,monospace;color:#9ab6d1;letter-spacing:2px}.metricval{font:800 27px ui-monospace,monospace;letter-spacing:-1px}.muted{color:var(--muted)}.tiny{font:11px/1.5 ui-monospace,monospace;color:#9baec7}.agentrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #26364d}.mini{height:28px;width:28px;display:grid;place-items:center;background:#162d44;border:1px solid #37546e;border-radius:7px;font:700 13px ui-monospace,monospace}.agentrow .detail{flex:1}.agentrow b{font-size:12px}.state{font:700 10px ui-monospace,monospace;color:#97abc4}.state.active{color:var(--orange)}.state.completed{color:var(--mint)}.state.failed{color:var(--pink)}.foot{border-top:1px solid #2b3b54;margin-top:14px;padding-top:11px;color:#a3b4c8;font-size:11px}.scroll{max-height:225px;overflow-y:auto}.ev{border-top:1px solid #28384f;padding:10px 0}.ev strong{font:700 10px ui-monospace,monospace;color:var(--blue)}.ev strong.done{color:var(--mint)}.ev strong.bad{color:var(--pink)}.ev .details{font-size:11px;color:#d6e3f1;margin-top:4px}.ev time{font-size:10px;color:#859bb5;float:right}.note{background:#0e2333;border:1px dashed #376079;padding:12px;border-radius:10px;color:#afc5d8;font-size:11px;margin-top:10px}.statusbar{display:flex;gap:14px;flex-wrap:wrap;padding:11px 17px;background:#0b1625;border-top:1px solid #29384c;color:#a4b8d2;font:11px ui-monospace,monospace}.statusbar b{color:#d1e7f8}.actions{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:18px;color:#94a9c1;font-size:12px}.btn{display:inline-flex;align-items:center;gap:8px;border:1px solid #3f6488;background:#193354;padding:10px 14px;border-radius:9px;color:#e0efff;font-weight:700;font-size:12px}.btn:hover{background:#254870}.pulse{color:var(--mint)}@media(max-width:1120px){.grid{grid-template-columns:1fr}.panes{display:grid;grid-template-columns:1fr 1fr}.pane.feed{grid-column:1/-1}}@media(max-width:650px){.shell{padding:15px 10px}.header{align-items:flex-start;flex-direction:column}.nav{flex-wrap:wrap}.panes{grid-template-columns:1fr}.pane.feed{grid-column:auto}.overlay{left:21px;top:21px;padding:6px}.stageTop{padding:0 10px}.stageMeta{display:none}.legend{gap:9px}.actions{flex-direction:column;align-items:stretch}}
+
+@media(min-width:1121px){.stage{position:sticky;top:14px}}
+.formlabel{display:block;font:700 10px ui-monospace,monospace;color:#a9c6df;letter-spacing:.6px;margin:10px 0 4px}
+.pane input,.pane select,.pane textarea{width:100%;min-width:0;border-radius:7px;border:1px solid #3a5976;background:#0a1929;color:#e8f4ff;padding:9px;font:13px system-ui;resize:vertical}
+.pane textarea{min-height:66px}.pane .full{display:flex;width:100%;justify-content:center;cursor:pointer;margin-top:9px}
+.smallbtn{border:1px solid #416f91;background:#153452;color:#e1efff;border-radius:7px;padding:6px 9px;font-size:11px;cursor:pointer}
+.rowActions{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;max-width:102px}.rowActions .smallbtn{padding:5px 6px}.smallbtn:disabled,.btn:disabled{opacity:.4;cursor:not-allowed}.notice{font:12px/1.5 system-ui;min-height:16px;margin-top:8px}
+.agentrow{align-items:center}.crewscroll{max-height:330px}.crewscroll .detail{min-width:0;overflow-wrap:anywhere}
+.taskResult{white-space:pre-wrap;max-height:180px;overflow:auto;padding:8px 0}
 </style>
 </head>
 <body><div class="shell">
-<header class="header"><div><div class="eyebrow">AGENTOS // ECHO-9</div><h1>Live Station View</h1><p class="subtitle">A visual window into real agent requests, not a scripted simulation.</p></div><nav class="nav" aria-label="Views"><a class="pill" href="/">MISSION CONTROL ↗</a><a class="pill" href="/processes">PROCESS MONITOR ↗</a><a class="pill sel" href="/station">STATION VIEW</a><div class="live"><span id="light" class="light"></span><span id="connection">CONNECTING</span></div></nav></header>
+<header class="header"><div><div class="eyebrow">AGENTOS // ECHO-9</div><h1>Live Station View</h1><p class="subtitle">Agents spawn, become zombies and dissolve according to real PCB lifecycle events. Movement is a replay of observed requests.</p></div><nav class="nav" aria-label="Views"><a class="pill" href="/">MISSION CONTROL ↗</a><a class="pill" href="/processes">PROCESS MONITOR ↗</a><a class="pill sel" href="/station">STATION VIEW</a><div class="live"><span id="light" class="light"></span><span id="connection">CONNECTING</span></div></nav></header>
 <div class="grid"><section class="stage"><div class="stageTop"><span class="sectiontag">01 / ECHO-9 OBSERVATION DECK</span><span class="stageMeta" id="runtimeLabel">MODEL —</span></div>
-<div class="canvaswrap"><canvas id="station" width="960" height="620" role="img" aria-label="Top-down pixel art space station showing four AI agents and one shared compute terminal"></canvas><div class="overlay"><strong>STATION / LIVE</strong><span id="stationClock">00:00:00</span></div></div>
-<div class="legend"><span class="leg"><i class="swatch" style="background:#65baff"></i>MEDICAL</span><span class="leg"><i class="swatch" style="background:#ffd075"></i>MAINTENANCE</span><span class="leg"><i class="swatch" style="background:#cf9dff"></i>RESEARCH</span><span class="leg"><i class="swatch" style="background:#64e6b9"></i>NAVIGATION</span></div>
+<div class="canvaswrap"><canvas id="station" width="960" height="620" role="img" aria-label="Top-down space station showing dynamic AgentOS agents and one shared compute terminal"></canvas><div class="overlay"><strong>STATION / LIVE</strong><span id="stationClock">00:00:00</span></div></div>
+<div class="legend"><span class="leg"><i class="swatch" style="background:#65baff"></i>MEDICAL</span><span class="leg"><i class="swatch" style="background:#ffd075"></i>ENGINEERING</span><span class="leg"><i class="swatch" style="background:#cf9dff"></i>RESEARCH</span><span class="leg"><i class="swatch" style="background:#64e6b9"></i>NAVIGATION</span><span class="leg"><i class="swatch" style="background:#557d57"></i>ZOMBIE / TERMINATED</span></div>
 <div class="statusbar"><span>CORE LINK: <b id="coreLink">CHECKING</b></span><span>IN-FLIGHT: <b id="inflight">0</b></span><span>OBSERVED REQUESTS: <b id="observed">0</b></span><span>ANIMATION: <b id="visualMode">LIVE</b></span></div></section>
 <aside class="panes"><section class="pane"><div class="label">02 / STATION STATUS</div><h2>Compute terminal</h2><div class="row"><div><div class="tiny">REQUESTS IN FLIGHT</div><div class="metricval" id="pendingMetric">0</div></div><div style="text-align:right"><div class="tiny">BACKEND</div><div id="backend" style="font-size:12px;font-weight:700;margin-top:9px">—</div></div></div><div class="note">AgentOS M1 serves one client at a time. An in-flight request may be waiting for the C server or for model inference. The current server does not expose internal queue or worker states.</div></section>
-<section class="pane"><div class="label">03 / CREW STATUS</div><h2>Autonomous-world preview</h2><div id="crew"></div><div class="tiny" style="margin-top:10px">Agent characters represent submitted client identities. They do not independently plan or act in M1.</div></section>
-<section class="pane feed"><div class="label">04 / LIVE OBSERVATIONS</div><h2>AgentOS activity</h2><div class="scroll" id="feed"><div class="muted">Waiting for an agent request…</div></div><div class="foot">Source: Python UI bridge → Unix socket → C AgentOS. Events here are bridge-observed request boundaries.</div></section></aside></div>
-<div class="actions"><div>Open <b>Mission Control</b> in another tab, send a prompt, then watch its agent travel to the shared terminal.</div><a class="btn" href="/" target="_blank" rel="noopener">OPEN MISSION CONTROL ↗</a></div>
+<section class="pane"><div class="label">03 / CREATE AGENTS</div><h2>Station population</h2>
+<label class="formlabel" for="newAgentId">Agent identity</label><input id="newAgentId" maxlength="128" placeholder="e.g. med-02" aria-label="New agent ID">
+<label class="formlabel" for="newAgentRole">Assigned station section</label><select id="newAgentRole"><option value="MEDICAL">Medical</option><option value="ENGINEERING">Engineering / Maintenance</option><option value="RESEARCH">Research</option><option value="NAVIGATION">Navigation</option></select>
+<button class="btn full" id="addAgent">✦ Add agent</button>
+<label class="formlabel" for="reactivateId">Disabled identities</label><select id="reactivateId"><option value="">No disabled identities</option></select>
+<button class="smallbtn" id="reactivate">Reactivate as a new PID</button>
+<div class="tiny" style="margin-top:9px">New agents materialize in their section. Terminated PCBs become visible zombies until reaped.</div><div id="actionNote" class="notice" role="status"></div></section>
+<section class="pane"><div class="label">04 / SECTION TASKS</div><h2>Assign real AI work</h2>
+<label class="formlabel" for="taskSection">Station section</label><select id="taskSection"><option value="MEDICAL">Medical</option><option value="ENGINEERING">Engineering / Maintenance</option><option value="RESEARCH">Research</option><option value="NAVIGATION">Navigation</option></select>
+<label class="formlabel" for="taskAgent">Registered agent</label><select id="taskAgent"><option value="">No agents available</option></select>
+<label class="formlabel" for="taskPrompt">Section task</label><textarea id="taskPrompt" rows="3" maxlength="2048" placeholder="Describe the task for this section"></textarea>
+<button class="btn full" id="taskSend">Send to selected agent</button><div id="taskResult" class="tiny taskResult" role="status"></div>
+<div class="tiny">Only registered agents in the selected section can receive UI tasks. Workbench retains direct protocol experiments.</div></section>
+<section class="pane"><div class="label">05 / NATIVE CREW</div><h2>Agent population <span class="tiny" id="crewCount"></span></h2><div class="tiny" id="unassigned">0 unassigned</div><div class="scroll crewscroll" id="crew"></div><div class="tiny" style="margin-top:9px">The crew and their zombie states come from the C ProcessManager, not simulated placeholders.</div></section>
+<section class="pane feed"><div class="label">06 / LIVE OBSERVATIONS</div><h2>AgentOS activity</h2><div class="scroll" id="feed"><div class="muted">Waiting for an agent request…</div></div><div class="foot">Source: bridge-observed request boundaries. Native PCB states, zombies and reaping come from the C ProcessManager.</div></section></aside></div>
+<div class="actions"><div>Agent creation and deletion reflect the real ProcessManager. Request journeys replay completed observations for clarity.</div><a class="btn" href="/processes">OPEN PCB MONITOR ↗</a></div>
 </div>
 <script>
 'use strict';
-const canvas=document.getElementById('station'),ctx=canvas.getContext('2d',{alpha:false});ctx.imageSmoothingEnabled=false;
+const canvas=document.getElementById('station');
+const ctx=canvas.getContext('2d',{alpha:false});
+ctx.imageSmoothingEnabled=false;
 const $=id=>document.getElementById(id);
-const palette={medical:'#65baff',maintenance:'#ffd075',research:'#ce9cff',navigation:'#64e6b9'};
+const palette={medical:'#65baff',maintenance:'#ffd075',research:'#ce9cff',navigation:'#64e6b9',unassigned:'#a4b4c8'};
 const defs={
- medical:{name:'Medical',glyph:'+',home:[244,168],target:[431,294],route:[[398,168],[398,155],[445,155],[445,270],[431,270],[431,294]],room:[34,42,402,226]},
- research:{name:'Research',glyph:'◆',home:[715,168],target:[529,294],route:[[563,168],[563,155],[515,155],[515,270],[529,270],[529,294]],room:[524,42,402,226]},
- maintenance:{name:'Maintenance',glyph:'⚙',home:[244,459],target:[431,345],route:[[398,459],[398,486],[445,486],[445,378],[431,378],[431,345]],room:[34,385,402,201]},
- navigation:{name:'Navigation',glyph:'✦',home:[715,459],target:[529,345],route:[[563,459],[563,486],[515,486],[515,378],[529,378],[529,345]],room:[524,385,402,201]}
+ medical:{name:'Medical',glyph:'+',room:[34,42,402,226],target:[431,294],route:[[398,168],[398,155],[445,155],[445,270],[431,270],[431,294]]},
+ research:{name:'Research',glyph:'◆',room:[524,42,402,226],target:[529,294],route:[[563,168],[563,155],[515,155],[515,270],[529,270],[529,294]]},
+ maintenance:{name:'Engineering',glyph:'⚙',room:[34,385,402,201],target:[431,345],route:[[398,459],[398,486],[445,486],[445,378],[431,378],[431,345]]},
+ navigation:{name:'Navigation',glyph:'✦',room:[524,385,402,201],target:[529,345],route:[[563,459],[563,486],[515,486],[515,378],[529,378],[529,345]]}
 };
-let liveEvents=[],serverOnline=false,backend='OLLAMA',model='',snapshotAt=0;
-// Bridge events describe observed request boundaries, not C worker scheduling.
-// Use one deterministic, frame-rate-independent journey per agent. A fast
-// completion finishes the visible trip as a *replay* instead of reversing early.
-const WALK_IN_MS=2100, CORE_PAUSE_MS=450, WALK_OUT_MS=1800;
-let journeys={},seenEvents=new Set();
-let poses={};Object.keys(defs).forEach(k=>poses[k]={x:defs[k].home[0],y:defs[k].home[1],status:'idle',pending:0,terminalAt:0});
+const sections=['MEDICAL','ENGINEERING','RESEARCH','NAVIGATION'];
+const displaySection={MEDICAL:'Medical',ENGINEERING:'Engineering / Maintenance',RESEARCH:'Research',NAVIGATION:'Navigation'};
+function sectionFor(role){const r=String(role||'').toUpperCase();return r==='MAINTENANCE'?'ENGINEERING':r;}
+function zoneFor(role){const s=sectionFor(role);return ({MEDICAL:'medical',ENGINEERING:'maintenance',RESEARCH:'research',NAVIGATION:'navigation'})[s]||'unassigned';}
+const WALK_IN_MS=2100,CORE_PAUSE_MS=450,WALK_OUT_MS=1800,SPAWN_MS=1000,DUST_MS=1550;
+let crew=new Map(),dust=[],disabled=[],runtimeId=null,initialized=false,lastSeq=0,liveEvents=[],serverOnline=false,model='',journeys={},seenEvents=new Set(),poses={},pendingActions=0;
+let lastRows=[],lastRosterRender=0,rosterPollBusy=false,taskPending=false;
 function box(x,y,w,h,c){ctx.fillStyle=c;ctx.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
-function stroke(x,y,w,h,c='#3b5970',th=2){box(x,y,w,th,c);box(x,y+h-th,w,th,c);box(x,y,th,h,c);box(x+w-th,y,th,h,c)}
-function lettering(txt,x,y,color='#e4f3ff',size=12){ctx.fillStyle=color;ctx.font=`700 ${size}px ui-monospace,monospace`;ctx.fillText(txt,x,y)}
-function pin(x,y,color){box(x-8,y-8,16,16,color);box(x-4,y-4,8,8,'#071525');box(x-2,y-2,4,4,color)}
-function desk(x,y,color){box(x-35,y-26,70,42,'#203a51');stroke(x-35,y-26,70,42,'#426480',3);box(x-25,y-19,50,27,'#081a29');box(x-21,y-16,42,20,color);box(x-21,y-16,42,20,'#10283988');box(x-14,y+18,28,6,'#4b647e')}
+function stroke(x,y,w,h,c='#3b5970',th=2){box(x,y,w,th,c);box(x,y+h-th,w,th,c);box(x,y,th,h,c);box(x+w-th,y,th,h,c);}
+function lettering(txt,x,y,color='#e4f3ff',size=12){ctx.fillStyle=color;ctx.font=`700 ${size}px ui-monospace,monospace`;ctx.fillText(txt,x,y);}
+function pin(x,y,color){box(x-8,y-8,16,16,color);box(x-4,y-4,8,8,'#071525');box(x-2,y-2,4,4,color);}
+function desk(x,y,color){box(x-35,y-26,70,42,'#203a51');stroke(x-35,y-26,70,42,'#426480',3);box(x-25,y-19,50,27,'#081a29');box(x-21,y-16,42,20,color);box(x-21,y-16,42,20,'#10283988');box(x-14,y+18,28,6,'#4b647e');}
+
 function drawBackground(t){box(0,0,960,620,'#071422');for(let i=0;i<135;i++){const x=(i*137+29)%958,y=(i*71+13)%620;box(x,y,i%4===0?2:1,i%4===0?2:1, i%3?'#19344a':'#3b5d6c')}
   // Outer hull
   box(13,20,934,584,'#15263c');stroke(13,20,934,584,'#466079',5);box(19,26,922,572,'#0a1b2d');
@@ -52,7 +77,7 @@ function drawBackground(t){box(0,0,960,620,'#071422');for(let i=0;i<135;i++){con
   // background tiles for 4 rooms
   for(const [key,d] of Object.entries(defs)){const [rx,ry,rw,rh]=d.room;const c=key==='medical'?'#142e42':key==='research'?'#2a2742':key==='maintenance'?'#392d31':'#16382f';box(rx,ry,rw,rh,c);stroke(rx,ry,rw,rh,'#49667c',4);
     for(let y=ry+20;y<ry+rh-15;y+=24)for(let x=rx+18;x<rx+rw-12;x+=25)box(x,y,2,2,'#456078');
-    const lc=palette[key];box(rx+15,ry+14,8,8,lc);lettering(key.toUpperCase()+' BAY',rx+35,ry+24,'#bcd3e6',12);
+    const lc=palette[key];box(rx+15,ry+14,8,8,lc);lettering(d.name.toUpperCase()+' BAY',rx+35,ry+24,'#bcd3e6',12);
     // interior consoles
     const top=key==='medical'||key==='research';desk(rx+85,ry+(top?110:105),lc);desk(rx+rw-75,ry+(top?105:110),'#65889a');
     // side screens
@@ -70,7 +95,7 @@ function drawBackground(t){box(0,0,960,620,'#071422');for(let i=0;i<135;i++){con
   // navigation map window
   box(682,457,105,58,'#163c53');stroke(682,457,105,58,'#416b86',3);ctx.strokeStyle='#81d9d2';ctx.lineWidth=2;ctx.beginPath();ctx.arc(731,487,19,0,Math.PI*2);ctx.stroke();pin(737,480,'#79f4d1');
   // central terminal, shared core
-  const active=Object.values(poses).some(p=>p.pending>0);const glow=active?0.65+0.35*Math.sin(t/180):0.4;
+  const active=[...crew.values()].some(p=>p.state==='WAITING'&&p.wait_reason==='INFERENCE')||Object.values(journeys).some(j=>j.completedAt===null);const glow=active?0.65+0.35*Math.sin(t/180):0.4;
   box(439,272,84,95,'#0a1625');stroke(439,272,84,95,'#799fc4',4);box(450,284,61,60,active?'#143950':'#193048');box(462,299,37,31,active?'#4dbaee':'#426d96');box(472,307,17,14,'#0b1f33');
   ctx.globalAlpha=glow;box(452,273,58,4,active?'#6cffe4':'#8dc2ff');ctx.globalAlpha=1;
   lettering('AI CORE',449,361,'#d2e8fa',11);
@@ -80,67 +105,231 @@ function drawBackground(t){box(0,0,960,620,'#071422');for(let i=0;i<135;i++){con
   // dark vignette corner tags
   lettering('ECHO-9  //  RESEARCH PLATFORM',39,598,'#668ba7',11);lettering('M1 · SHARED INFERENCE',746,598,'#668ba7',11);
 }
-function drawAgent(x,y,color,glyph,t,status){const bob=Math.round(Math.sin(t/240+x/22)*2);x=Math.round(x);y=Math.round(y+bob);box(x-12,y+13,25,5,'#070f19bb');box(x-10,y-14,20,26,'#182b41');box(x-13,y-9,26,23,color);box(x-10,y-5,20,16,'#152a3f');box(x-7,y-3,5,4,'#bdf3ff');box(x+3,y-3,5,4,'#bdf3ff');box(x-7,y+12,6,5,color);box(x+2,y+12,6,5,color);box(x-15,y-5,4,13,color);box(x+11,y-5,4,13,color);
-  if(status==='active'){box(x-5,y-30,12,4,'#ffbc78');box(x-2,y-36,6,5,'#ffbc78')}else if(status==='completed'){box(x-3,y-34,8,8,'#62e8b7')}else if(status==='failed'){box(x-3,y-34,8,8,'#ff8eac')}
-}
-function pointAlong(points,p){const segs=[];let total=0;for(let i=1;i<points.length;i++){const dx=points[i][0]-points[i-1][0],dy=points[i][1]-points[i-1][1];const len=Math.hypot(dx,dy);segs.push(len);total+=len}let remaining=p*total;for(let i=0;i<segs.length;i++){if(remaining<=segs[i]){const a=points[i],b=points[i+1],q=segs[i]===0?0:remaining/segs[i];return [a[0]+(b[0]-a[0])*q,a[1]+(b[1]-a[1])*q]}remaining-=segs[i]}return points[points.length-1]}
-function mapStatus(){const newest={};const active=new Map();for(const e of [...liveEvents].reverse()){if(!defs[e.agent])continue;newest[e.agent]=e;if(e.kind==='ARRIVED')active.set(e.id,e);if(['COMPLETED','FAILED','TRANSPORT_ERROR'].includes(e.kind))active.delete(e.id)}const count={};for(const a of Object.keys(defs))count[a]=0;for(const v of active.values())count[v.agent]++;
- const now=Date.now(),out={};for(const a of Object.keys(defs)){const e=newest[a],pending=count[a];let status='idle';if(pending)status='active';else if(e){const age=e.at_ms?now-e.at_ms:999999;if(age<14000&&e.kind==='COMPLETED')status='completed';if(age<14000&&(e.kind==='FAILED'||e.kind==='TRANSPORT_ERROR'))status='failed';}out[a]={pending,status,latest:e};}return {agents:out,pending:active.size};}
-function renderCrew(status){const node=$('crew');node.replaceChildren();for(const [k,d] of Object.entries(defs)){const s=status.agents[k],div=document.createElement('div');div.className='agentrow';const mini=document.createElement('div');mini.className='mini';mini.style.color=palette[k];mini.textContent=d.glyph;const detail=document.createElement('div');detail.className='detail';const b=document.createElement('b');b.textContent=d.name+' agent';const sm=document.createElement('div');sm.className='tiny';sm.textContent=s.pending?s.pending+' request(s) awaiting reply':s.status==='completed'?'Response received':s.status==='failed'?'Last request failed':'At workstation';detail.append(b,sm);const lab=document.createElement('span');lab.className='state '+s.status;lab.textContent=s.status==='active'?'IN FLIGHT':s.status.toUpperCase();div.append(mini,detail,lab);node.append(div)}}
-function renderFeed(){const root=$('feed');root.replaceChildren();if(!liveEvents.length){root.textContent='Waiting for an agent request…';return}for(const e of liveEvents.slice(0,8)){const div=document.createElement('div');div.className='ev';const strong=document.createElement('strong');strong.textContent=e.kind;strong.className=['FAILED','TRANSPORT_ERROR'].includes(e.kind)?'bad':e.kind==='COMPLETED'?'done':'';const when=document.createElement('time');when.textContent=e.ts||'';const desc=document.createElement('div');desc.className='details';desc.textContent=`${e.agent||'unknown'} · ${e.detail||''}`;div.append(strong,when,desc);root.append(div)}}
-function collectJourneys(events) {
- const now=Date.now();
- // Status events are newest-first; process unseen events chronologically.
- for(const e of [...events].reverse()) {
-   if(!e || !e.id || !defs[e.agent]) continue;
-   const key=e.id+'|'+e.kind;
-   if(seenEvents.has(key)) continue;
-   seenEvents.add(key);
-   // Never animate historical requests from an old session.
-   if(!e.at_ms || now-e.at_ms>8000) continue;
-   if(e.kind==='ARRIVED') {
-     journeys[e.agent]={id:e.id,startedAt:now,completedAt:null};
-   } else if(['COMPLETED','FAILED','TRANSPORT_ERROR'].includes(e.kind)) {
-     const j=journeys[e.agent];
-     if(j && j.id===e.id) j.completedAt=now;
-     else journeys[e.agent]={id:e.id,startedAt:now,completedAt:now};
+
+function drawAgent(x,y,color,t,rec){
+ x=Math.round(x);y=Math.round(y);
+ const dead=rec.state==='TERMINATED';
+ const bob=dead?0:Math.round(Math.sin(t/260+rec.pid)*1.5);
+ y+=bob;
+ const suit=dead?'#557d57':color,face=dead?'#314b3a':'#152a3f';
+ box(x-13,y+13,27,5,'#070f19bb');
+ box(x-10,y-14,20,26,dead?'#364539':'#182b41');
+ box(x-13,y-9,26,23,suit);
+ box(x-10,y-5,20,16,face);
+ if(dead){
+   // A zombie remains in the station while the PCB is TERMINATED.
+   box(x-7,y-3,5,4,'#fb77aa');box(x+4,y-2,4,3,'#f4e89d');
+   box(x-7,y+4,10,3,'#83a786');box(x+3,y+9,8,2,'#1a3224');
+   box(x-17,y-2,5,12,'#5b8066');box(x+12,y+2,5,15,'#688263');
+   box(x-8,y+13,6,5,'#425744');box(x+2,y+14,7,4,'#354b35');
+   box(x-9,y-27,19,4,'#a6e4aa');
+ }else{
+   box(x-7,y-3,5,4,'#bdf3ff');box(x+3,y-3,5,4,'#bdf3ff');
+   box(x-7,y+12,6,5,color);box(x+2,y+12,6,5,color);
+   box(x-15,y-5,4,13,color);box(x+11,y-5,4,13,color);
+   if(rec.state==='RUNNING'){box(x-5,y-30,12,4,'#ffbc78');box(x-2,y-36,6,5,'#ffbc78');}
+   if(rec.state==='WAITING'&&rec.wait_reason==='INFERENCE'){
+     for(let i=0;i<3;i++)box(x-9+i*7,y-32-Math.round(2*Math.sin(t/175+i)),4,4,'#a6f5ff');
    }
  }
- if(seenEvents.size>700) seenEvents=new Set(events.map(e=>e.id+'|'+e.kind));
 }
-function journeyProgress(j,now) {
- const inbound=Math.min(1,Math.max(0,(now-j.startedAt)/WALK_IN_MS));
- if(j.completedAt===null) return inbound;
- // Always reach the AI core, even when the LLM answers in 150 milliseconds.
- const depart=Math.max(j.completedAt,j.startedAt+WALK_IN_MS+CORE_PAUSE_MS);
- return now<depart ? inbound : Math.max(0,1-(now-depart)/WALK_OUT_MS);
+function pointAlong(points,p){
+ const segs=[];let total=0;
+ for(let i=1;i<points.length;i++){const [ax,ay]=points[i-1],[bx,by]=points[i];const len=Math.hypot(bx-ax,by-ay);segs.push(len);total+=len;}
+ let remaining=Math.max(0,Math.min(1,p))*total;
+ for(let i=0;i<segs.length;i++){if(remaining<=segs[i]){const a=points[i],b=points[i+1],q=segs[i]?remaining/segs[i]:0;return[a[0]+(b[0]-a[0])*q,a[1]+(b[1]-a[1])*q];}remaining-=segs[i];}
+ return points[points.length-1];
 }
-async function poll(){try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw new Error('offline');const d=await r.json();liveEvents=d.events||[];collectJourneys(liveEvents);serverOnline=!!d.socket_present;backend=d.backend||'ollama';model=d.model||'';snapshotAt=Date.now();$('connection').textContent=serverOnline?'SOCKET PRESENT':'SOCKET MISSING';$('light').className='light'+(serverOnline?'':' off');$('coreLink').textContent=serverOnline?'SOCKET PRESENT':'OFFLINE';$('backend').textContent='OLLAMA';$('runtimeLabel').textContent='MODEL / '+model;const s=mapStatus();$('visualMode').textContent=Object.values(journeys).some(j=>j.completedAt!==null)?'RECENT REQUEST REPLAY':'LIVE';$('inflight').textContent=s.pending;$('pendingMetric').textContent=s.pending;$('observed').textContent=liveEvents.filter(x=>x.kind==='ARRIVED').length;renderCrew(s);renderFeed()}catch(e){serverOnline=false;$('connection').textContent='BRIDGE OFFLINE';$('light').className='light off';$('coreLink').textContent='UNAVAILABLE';}}
+function slotFor(zone,index){
+ if(zone==='unassigned')return [468+((index%3)-1)*32,411+Math.floor(index/3)*26];
+ const [rx,ry]=defs[zone].room;
+ return [rx+147+(index%4)*70,ry+85+Math.floor(index/4)*53];
+}
+function assignSlots(){
+ const buckets={medical:[],maintenance:[],research:[],navigation:[],unassigned:[]};
+ for(const rec of [...crew.values()].sort((a,b)=>a.pid-b.pid))buckets[zoneFor(rec.role)].push(rec);
+ for(const [zone,items] of Object.entries(buckets)){
+   for(let i=0;i<items.length;i++){
+     items[i].visible=i<(zone==='unassigned'?3:12);
+     items[i].home=slotFor(zone,i);
+   }
+ }
+ return buckets;
+}
+function dustBurst(rec){
+ if(!rec.visible)return;
+ const pos=rec.lastDraw||rec.home||[480,315],now=Date.now();
+ const color=palette[zoneFor(rec.role)];
+ for(let i=0;i<30;i++){
+   const angle=((rec.pid*17+i*137.5)%360)*Math.PI/180;
+   const speed=17+((i*19+rec.pid)%49);
+   dust.push({x:pos[0],y:pos[1],vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-19,createdAt:now,color:i%4===0?'#a6e4aa':color,sz:i%3+2});
+ }
+}
+function mergeRoster(snapshot){
+ const now=Date.now();
+ if(runtimeId!==snapshot.runtime_id){crew.clear();dust=[];journeys={};seenEvents=new Set();lastSeq=0;initialized=false;runtimeId=snapshot.runtime_id;}
+ const latest=new Set();
+ for(const p of snapshot.processes||[]){
+   latest.add(p.pid);
+   let rec=crew.get(p.pid);
+   if(!rec){rec={...p,bornAt:initialized?now:now-SPAWN_MS,home:[480,315],visible:true};crew.set(p.pid,rec);}
+   else {const old=rec.state;Object.assign(rec,p);if(old!=='TERMINATED'&&p.state==='TERMINATED'){delete journeys[p.agent_id];rec.zombieAt=now;}}
+ }
+ assignSlots();
+ if(initialized){
+   for(const [pid,rec] of crew){if(!latest.has(pid)){dustBurst(rec);crew.delete(pid);delete journeys[rec.agent_id];}}
+ }
+ initialized=true;
+ lastRows=snapshot.processes||[];
+ disabled=snapshot.disabled||[];
+ renderCrew();updateSelectors();
+}
+function makeOption(value,label){const o=document.createElement('option');o.value=value;o.textContent=label;return o;}
+function updateSelectors(){
+ const section=$('taskSection').value,previous=$('taskAgent').value;
+ $('taskAgent').replaceChildren();
+ const options=lastRows.filter(p=>p.state!=='TERMINATED'&&sectionFor(p.role)===section&&!disabled.includes(p.agent_id));
+ for(const p of options)$('taskAgent').append(makeOption(String(p.pid),p.agent_id+' · PID '+p.pid));
+ if(options.some(p=>String(p.pid)===previous))$('taskAgent').value=previous;
+ if(!options.length)$('taskAgent').append(makeOption('','No active agents in this section'));
+ $('taskSend').disabled=!options.length||taskPending;
+ $('crewCount').textContent=lastRows.length+' PCB'+(lastRows.length===1?'':'s');
+ $('unassigned').textContent=lastRows.filter(p=>!sections.includes(sectionFor(p.role))).length+' unassigned';
+ const prev=$('reactivateId').value;
+ $('reactivateId').replaceChildren();
+ for(const id of disabled)$('reactivateId').append(makeOption(id,id));
+ if(disabled.includes(prev))$('reactivateId').value=prev;
+ if(!disabled.length)$('reactivateId').append(makeOption('','No disabled identities'));
+ $('reactivate').disabled=!disabled.length;
+}
+function renderCrew(){
+ const root=$('crew');root.replaceChildren();
+ if(!lastRows.length){const d=document.createElement('div');d.className='tiny';d.textContent='No agents. Add one to bring the station to life.';root.append(d);return;}
+ for(const p of lastRows){
+   const row=document.createElement('div');row.className='agentrow';
+   const marker=document.createElement('div');marker.className='mini';marker.style.color=palette[zoneFor(p.role)];marker.textContent=p.state==='TERMINATED'?'☣':defs[zoneFor(p.role)]?.glyph||'?';
+   const detail=document.createElement('div');detail.className='detail';
+   const n=document.createElement('b');n.textContent=p.agent_id;
+   const d=document.createElement('div');d.className='tiny';d.textContent='PID '+p.pid+' · '+p.role;
+   const st=document.createElement('div');st.className='tiny';st.textContent=p.state==='TERMINATED'?'ZOMBIE · awaiting reap':p.state+(p.wait_reason!=='NONE'?' · '+p.wait_reason:'');
+   detail.append(n,d,st);
+   const action=document.createElement('button');action.className='smallbtn';action.textContent=p.state==='TERMINATED'?'Reap':'Terminate';
+   action.onclick=()=>act(p.state==='TERMINATED'?'reap':'terminate',{pid:p.pid});
+   const group=document.createElement('div');group.className='rowActions';group.append(action);
+   if(p.state!=='TERMINATED'){const remove=document.createElement('button');remove.className='smallbtn';remove.textContent='Remove';remove.title='Disable identity and terminate agent';remove.onclick=()=>act('remove',{agent_id:p.agent_id});group.append(remove);}
+   row.append(marker,detail,group);root.append(row);
+ }
+}
+function renderFeed(){const root=$('feed');root.replaceChildren();if(!liveEvents.length){root.textContent='Waiting for an agent request…';return;}
+ for(const e of liveEvents.slice(0,8)){const div=document.createElement('div');div.className='ev';const strong=document.createElement('strong');strong.textContent=e.kind;strong.className=['FAILED','TRANSPORT_ERROR'].includes(e.kind)?'bad':e.kind==='COMPLETED'?'done':'';const when=document.createElement('time');when.textContent=e.ts||'';const details=document.createElement('div');details.className='details';details.textContent=(e.agent||'unknown')+' · '+(e.detail||'');div.append(strong,when,details);root.append(div);}
+}
+function collectJourneys(events){
+ const now=Date.now();
+ for(const e of [...events].reverse()){
+   if(!e?.id)continue;
+   const eventKey=e.id+'|'+e.kind;if(seenEvents.has(eventKey))continue;seenEvents.add(eventKey);
+   if(!e.at_ms||now-e.at_ms>8000)continue;
+   const normalized={medical:'medical-agent',maintenance:'maintenance-agent',research:'research-agent',navigation:'navigation-agent'}[e.agent]||e.agent;
+   const rec=[...crew.values()].find(p=>p.agent_id===normalized&&p.state!=='TERMINATED');
+   if(!rec)continue;
+   if(e.kind==='ARRIVED')journeys[normalized]={pid:rec.pid,startedAt:now,completedAt:null};
+   else if(['COMPLETED','FAILED','TRANSPORT_ERROR'].includes(e.kind)){
+     const journey=journeys[normalized];
+     if(journey&&journey.pid===rec.pid)journey.completedAt=now;
+     else journeys[normalized]={pid:rec.pid,startedAt:now,completedAt:now};
+   }
+ }
+ if(seenEvents.size>750)seenEvents=new Set(events.map(e=>e.id+'|'+e.kind));
+}
+function journeyProgress(j,now){const inbound=Math.min(1,Math.max(0,(now-j.startedAt)/WALK_IN_MS));if(j.completedAt===null)return inbound;const depart=Math.max(j.completedAt,j.startedAt+WALK_IN_MS+CORE_PAUSE_MS);return now<depart?inbound:Math.max(0,1-(now-depart)/WALK_OUT_MS);}
+async function api(path,method='GET',payload=null){
+ const opts={method,cache:'no-store'};
+ if(payload!==null){opts.headers={'Content-Type':'application/json','X-AgentOS-Control':'1'};opts.body=JSON.stringify(payload);}
+ const r=await fetch(path,opts),data=await r.json();
+ if(!r.ok||data.status==='error')throw Error(data.code||data.error||'HTTP '+r.status);
+ return data;
+}
+function note(message,bad=false){$('actionNote').textContent=message;$('actionNote').style.color=bad?'#ffb0ae':'#7beac9';}
+async function act(operation,fields){
+ if(pendingActions)return;
+ pendingActions++;
+ try{const result=await api('/api/process-action','POST',{operation,...fields});note(operation.toUpperCase()+': '+(result.code||result.status));await pollNative();}
+ catch(e){note(e.message,true);}finally{pendingActions--;}
+}
+$('addAgent').onclick=()=>{const agent_id=$('newAgentId').value.trim();if(!agent_id)return note('Enter an agent ID',true);act('add',{agent_id,role:$('newAgentRole').value});};
+$('reactivate').onclick=()=>{const agent_id=$('reactivateId').value;if(agent_id)act('reactivate',{agent_id,role:$('newAgentRole').value});};
+$('taskSection').onchange=updateSelectors;
+$('taskSend').onclick=async()=>{
+ if(taskPending)return;
+ const pid=Number($('taskAgent').value),p=lastRows.find(x=>x.pid===pid),section=$('taskSection').value,prompt=$('taskPrompt').value.trim();
+ if(!p||!prompt)return note('Choose an active agent and enter a task',true);
+ if(sectionFor(p.role)!==section)return note('Role/section mismatch',true);
+ taskPending=true;$('taskSend').disabled=true;note('Sending '+section+' task to '+p.agent_id+'…');
+ try{const data=await api('/api/agent-infer','POST',{agent_id:p.agent_id,pid:p.pid,section,prompt});
+   $('taskResult').textContent=data.response?.status==='ok'?data.response.result?.text||'Completed':JSON.stringify(data.response||data,null,2);note('Inference completed for '+p.agent_id);}
+ catch(e){note(e.message,true);$('taskResult').textContent=e.message;}
+ finally{taskPending=false;updateSelectors();await pollNative();}
+};
+async function pollNative(){
+ if(rosterPollBusy)return;rosterPollBusy=true;
+ try{const r=await api('/api/processes');mergeRoster(r);
+   const events=await api('/api/process-events?since='+lastSeq);
+   for(const e of events.events||[])lastSeq=Math.max(lastSeq,e.seq);
+   $('connection').textContent='PROCESS CORE ONLINE';$('light').className='light';
+ }catch(e){$('connection').textContent='PROCESS CORE OFFLINE';$('light').className='light off';$('coreLink').textContent='UNAVAILABLE';}
+ finally{rosterPollBusy=false;}
+}
+async function pollStatus(){
+ try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error();const d=await r.json();
+  liveEvents=d.events||[];serverOnline=!!d.socket_present;model=d.model||'';
+  collectJourneys(liveEvents);
+  $('coreLink').textContent=serverOnline?'SOCKET PRESENT':'MISSING';$('backend').textContent=d.backend||'OLLAMA';$('runtimeLabel').textContent='MODEL / '+model;
+  const active=liveEvents.filter(e=>e.kind==='ARRIVED').filter(e=>!liveEvents.some(x=>x.id===e.id&&['COMPLETED','FAILED','TRANSPORT_ERROR'].includes(x.kind))).length;
+  $('inflight').textContent=active;$('pendingMetric').textContent=active;$('observed').textContent=liveEvents.filter(e=>e.kind==='ARRIVED').length;
+  $('visualMode').textContent=Object.values(journeys).some(j=>j.completedAt!==null)?'RECENT REQUEST REPLAY':'LIVE';
+  renderFeed();
+ }catch(e){serverOnline=false;$('coreLink').textContent='BRIDGE OFFLINE';}
+}
 function draw(t){
- const status=mapStatus(),now=Date.now();
- for(const [k,d] of Object.entries(defs)) {
-   const p=poses[k],j=journeys[k];
-   p.pending=status.agents[k].pending;
-   p.status=status.agents[k].status;
-   const route=[d.home,...d.route];
-   const progress=j?journeyProgress(j,now):0;
-   p.progress=progress;
-   const pt=pointAlong(route,progress);
-   p.x=pt[0];p.y=pt[1];
-   if(j && j.completedAt!==null && progress===0 && now>j.startedAt+WALK_IN_MS+CORE_PAUSE_MS+WALK_OUT_MS) delete journeys[k];
- }
+ const now=Date.now();assignSlots();
  drawBackground(t);
- for(const [key,d] of Object.entries(defs)) {
-   const p=poses[key],col=palette[key];
-   if(p.pending>0){ctx.globalAlpha=.25+.15*Math.sin(t/260);ctx.fillStyle=col;ctx.beginPath();ctx.arc(p.x,p.y,27,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
-   drawAgent(p.x,p.y,col,d.glyph,t,p.status);
+ const visible=[...crew.values()].filter(r=>r.visible).sort((a,b)=>a.pid-b.pid);
+ for(const rec of visible){
+   const zone=zoneFor(rec.role),def=defs[zone],col=palette[zone];
+   let [x,y]=rec.home;
+   const journey=journeys[rec.agent_id];
+   if(journey&&journey.pid===rec.pid&&def&&rec.state!=='TERMINATED'){
+     const progress=journeyProgress(journey,now);
+     [x,y]=pointAlong([rec.home,...def.route],progress);
+     if(journey.completedAt!==null&&progress===0&&now>journey.startedAt+WALK_IN_MS+CORE_PAUSE_MS+WALK_OUT_MS)delete journeys[rec.agent_id];
+   }
+   rec.lastDraw=[x,y];
+   const age=now-rec.bornAt,appearing=Math.max(0,1-age/SPAWN_MS);
+   if(appearing>0){
+     ctx.globalAlpha=0.23+0.77*(1-appearing);
+     stroke(x-20,y-23,41,49,col,3);
+     for(let i=0;i<8;i++)box(x-19+((i*13)%35),y-21+((i*17)%47),3,3,col);
+   }
+   drawAgent(x,y,col,t,rec);ctx.globalAlpha=1;
+   const tag=rec.agent_id.length>14?rec.agent_id.slice(0,13)+'…':rec.agent_id;
+   const label=(rec.state==='TERMINATED'?'☣ ':'')+tag+' #'+rec.pid;
+   ctx.font='700 10px ui-monospace,monospace';let w=ctx.measureText(label).width;
+   box(x-w/2-5,y+22,w+10,17,rec.state==='TERMINATED'?'#243f30dd':'#07192bdd');
+   lettering(label,x-w/2,y+34,rec.state==='TERMINATED'?'#b9ffc2':'#d2e6f7',10);
  }
+ for(const p of dust){const phase=Math.max(0,(now-p.createdAt)/DUST_MS);if(phase>=1)continue;
+   ctx.globalAlpha=1-phase;box(p.x+p.vx*phase,p.y+p.vy*phase+48*phase*phase,p.sz,p.sz,p.color);ctx.globalAlpha=1;}
+ dust=dust.filter(p=>now-p.createdAt<DUST_MS);
+ const hidden=[...crew.values()].filter(r=>!r.visible);
+ if(hidden.length){box(387,559,194,18,'#172e43');lettering('+'+hidden.length+' MORE AGENTS IN ROSTER',394,572,'#c3d5e8',10);}
  requestAnimationFrame(draw);
 }
-$('stationClock').textContent=new Date().toLocaleTimeString('en-GB');setInterval(()=>$('stationClock').textContent=new Date().toLocaleTimeString('en-GB'),1000);poll();setInterval(poll,650);requestAnimationFrame(draw);
-</script>
-<section style="margin:12px auto;padding:12px;max-width:1100px;background:#10253d;color:#e4effb;border:1px solid #31506e;border-radius:10px" aria-label="AgentOS live process roster"><strong>AgentOS Native PCB Roster</strong> <span style="font-size:12px;color:#b2c6dd">(controlled P1 state, not host OS scheduling)</span><div id="nativeRoster" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:9px">Connecting…</div></section>
-<script>
-async function pollNativeRoster(){try{const r=await fetch('/api/processes',{cache:'no-store'});const d=await r.json();if(!r.ok||d.status!=='ok')throw Error();const root=document.getElementById('nativeRoster');root.replaceChildren();for(const p of d.processes){const el=document.createElement('span');el.style.cssText='padding:6px 9px;border:1px solid #52759a;border-radius:6px;font:12px system-ui';el.textContent=p.agent_id+' · PID '+p.pid+' · '+p.state;root.append(el)}if(!d.processes.length)root.textContent='No logical processes registered yet.'}catch(e){document.getElementById('nativeRoster').textContent='Native process monitor unavailable.'}}pollNativeRoster();setInterval(pollNativeRoster,1900);
+$('stationClock').textContent=new Date().toLocaleTimeString('en-GB');
+setInterval(()=>$('stationClock').textContent=new Date().toLocaleTimeString('en-GB'),1000);
+updateSelectors();pollNative();pollStatus();
+setInterval(pollNative,950);setInterval(pollStatus,850);
+requestAnimationFrame(draw);
+
 </script>
 </body></html>

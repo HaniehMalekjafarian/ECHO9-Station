@@ -1,6 +1,6 @@
 # ProcessManager API behavior — student reference
 
-The final C types, return codes, field sizes and function declarations are in **`include/process_manager.h`**. Do not change that header or the instructor-owned dispatcher/control protocol.
+The final C types, return codes, field sizes and function declarations are in **`include/process_manager.h`**. Do not change that header or the supplied dispatcher/control protocol.
 
 - One PCB per logical agent; `agent_id` is an exact case-sensitive UTF-8 label 1–128 bytes, never a Linux PID or connection ID. Automatic registration reuses a live PID, rejects a zombie, and rejects a disabled identity. Only valid complete `infer` frames can register an agent.
 - Default caps: 64 live-plus-zombie PCB entries; 256 disabled IDs. `pm_list` and `pm_list_disabled` return *total* count while copying at most the caller's capacity, sorted by increasing PID / insertion order respectively. Snapshots are owned copies.

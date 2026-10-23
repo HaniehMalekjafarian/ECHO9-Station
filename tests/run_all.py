@@ -19,6 +19,7 @@ SUITES = (
     "tests/test_build_dependencies.py",
     "tests/test_process_manager_unit.py",
     "tests/test_process_integration.py",
+    "tests/test_section_ui.py",
     "tests/test_m1.py",
     "tests/test_m1_persistence.py",
     "tests/test_slow_client_deadline.py",

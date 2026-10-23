@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Instructor-only UI bridge: browser HTTP -> Unix socket -> C AgentOS.
+"""Local UI bridge: browser HTTP -> Unix socket -> C AgentOS.
 
 No pip dependencies. Dashboard events are OBSERVATIONS AT THE BRIDGE,
 not internal scheduler/worker metrics. Do not expose on the public internet.
@@ -257,14 +257,44 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response(503, {"error": "Action outcome not confirmed; refresh roster: " + str(exc)[:110]})
 
     def handle_agent_infer(self, payload):
+        """Section-scoped UI dispatch; raw protocol experiments stay in Workbench.
+
+        This P1 check is at the HTTP boundary. It does not change the v1
+        Unix-socket protocol's deliberate auto-registration behavior.
+        """
         if not isinstance(payload, dict):
             return self.json_response(400, {"error": "Invalid inference"})
         agent = payload.get("agent_id")
+        section = payload.get("section")
+        pid = payload.get("pid")
         prompt = payload.get("prompt")
+        valid_sections = {"MEDICAL", "ENGINEERING", "RESEARCH", "NAVIGATION"}
         if (not isinstance(agent, str) or not 1 <= len(agent.encode("utf-8")) <= 128 or
+                section not in valid_sections or type(pid) is not int or pid <= 0 or
                 not isinstance(prompt, str) or not 1 <= len(prompt.encode("utf-8")) <= 2048):
-            return self.json_response(400, {"error": "Invalid agent or prompt"})
-        rid = "process-" + uuid.uuid4().hex[:10]
+            return self.json_response(400, {"error": "Select a section, registered agent and nonempty task"})
+        try:
+            current = send_control("list")
+            if current.get("status") != "ok":
+                return self.json_response(503, {"error": "Process roster unavailable"})
+            entry = next((p for p in current.get("processes", [])
+                          if p.get("agent_id") == agent and p.get("pid") == pid), None)
+            if entry is None or agent in current.get("disabled", []):
+                return self.json_response(409, {"code": "AGENT_NOT_REGISTERED",
+                                                "error": "Choose an existing active agent"})
+            if entry.get("state") == "TERMINATED":
+                return self.json_response(409, {"code": "AGENT_TERMINATED",
+                                                "error": "Zombie agents cannot accept tasks"})
+            role = entry.get("role", "").upper()
+            expected = "ENGINEERING" if role in ("ENGINEERING", "MAINTENANCE") else role
+            if expected != section:
+                return self.json_response(409, {"code": "ROLE_MISMATCH",
+                                                "error": "Agent role does not match task section"})
+        except (OSError, TimeoutError, ValueError) as exc:
+            return self.json_response(503, {"error": "Roster check failed: " + str(exc)[:110]})
+
+        rid = "station-" + uuid.uuid4().hex[:10]
+        log_event("ARRIVED", rid, agent, "Section " + section + " task submitted")
         request = {"version": 1, "request_id": rid, "agent_id": agent,
                    "operation": "infer", "payload": {"prompt": prompt}}
         raw = (json.dumps(request, ensure_ascii=False) + "\n").encode("utf-8")
@@ -277,8 +307,12 @@ class Handler(BaseHTTPRequestHandler):
                     line = stream.readline(16386)
             if not line.endswith(b"\n"):
                 raise ValueError("Incomplete AgentOS response")
-            return self.json_response(200, {"response": json.loads(line), "agent_id": agent})
+            response = json.loads(line)
+            log_event("COMPLETED" if response.get("status") == "ok" else "FAILED",
+                      rid, agent, "Section " + section + " inference finished")
+            return self.json_response(200, {"response": response, "agent_id": agent})
         except (OSError, TimeoutError, ValueError) as exc:
+            log_event("TRANSPORT_ERROR", rid, agent, str(exc)[:110])
             return self.json_response(502, {"error": str(exc)[:140]})
 
     def handle_workbench(self, payload):

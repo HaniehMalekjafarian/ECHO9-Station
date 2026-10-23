@@ -6,7 +6,7 @@ Use the **Ubuntu 24.04 Dev Container**; the project Dockerfile installs GCC, `ma
 make doctor
 make
 python3 tests/test_process_manager_unit.py   # PCB checks alone
-make test                                   # all 12 public suites
+make test                                   # all 13 public suites
 make clean                                  # remove generated objects/binary
 ```
 

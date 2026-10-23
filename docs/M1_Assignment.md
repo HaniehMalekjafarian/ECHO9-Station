@@ -19,7 +19,7 @@ This is Phase 1 of a five-phase cumulative project. In P2 your ProcessManager is
 | `src/process_manager.c` | Compiling starter for student-owned PCB registry and state machine | **Implement the functions** |
 | `src/protocol.c` and `include/protocol.h` | Strict validated inference protocol v1 | Supplied; do not rewrite |
 | `src/request_dispatcher.c` | Associates valid inference with logical PCB before backend call | Supplied |
-| `src/agentos_runtime.c` | Instructor-controlled lifecycle transitions and native event stream | Supplied |
+| `src/agentos_runtime.c` | Supplied lifecycle transitions and native event stream | Supplied |
 | `src/control_plane.c` | Trusted local management commands, separate from public `infer` | Supplied |
 | `src/backend.c`, `src/ollama_backend.c` | Ollama backend connector | Supplied |
 | `demo/` | Mission Control, Station, Workbench and native Process Monitor | Supplied; observe your code |
@@ -36,7 +36,7 @@ The first valid `infer` from an unknown non-disabled `agent_id` automatically re
 
 **M1.3 — One-client request lifecycle.** Read exactly one newline-delimited UTF-8 JSON frame (at most 16384 bytes); preserve timeout, incomplete, overlong and invalid input errors; call the supplied protocol handler and deliver exactly one complete response.
 
-**M1.4 — Sequential accept loop.** Accept the next inference client, configure it, serve one request, and close it. Preserve existing signal shutdown and the *instructor-supplied* polling of the private control listener.
+**M1.4 — Sequential accept loop.** Accept the next inference client, configure it, serve one request, and close it. Preserve existing signal shutdown and the *supplied* polling of the private control listener.
 
 ## Part B — Student ProcessManager (`src/process_manager.c`)
 
@@ -59,19 +59,19 @@ The first valid `infer` from an unknown non-disabled `agent_id` automatically re
 | WAITING | READY, TERMINATED |
 | TERMINATED | one successful reap (PCB disappears; no sixth state) |
 
-The authoritative C names and statuses appear in `include/process_manager.h`. Use internal data structures of your choice, but never retain caller-owned pointers as names or expose mutable PCB pointers. The instructor-supplied driver calls these functions to make the lifecycle visible in the UI. Do **not** implement pthreads, kernel `fork/exec`, preemptive scheduling, or Linux process ownership in this phase.
+The authoritative C names and statuses appear in `include/process_manager.h`. Use internal data structures of your choice, but never retain caller-owned pointers as names or expose mutable PCB pointers. The supplied driver calls these functions to make the lifecycle visible in the UI. Do **not** implement pthreads, kernel `fork/exec`, preemptive scheduling, or Linux process ownership in this phase.
 
 ## Setup, tests and station demonstration
 
-Run `make doctor` and `make` inside the Ubuntu development container. The unimplemented starter **compiles**; `make test` is expected to fail until your work is complete. There are **12 public suites**, with ProcessManager unit tests independent of socket work. Run `python3 tests/test_process_manager_unit.py` to isolate the PCB module, then `make test` for the integrated package. The suite starts its own deterministic Ollama-compatible HTTP fixture; a real LLM is not required for CI.
+Run `make doctor` and `make` inside the Ubuntu development container. The unimplemented starter **compiles**; `make test` is expected to fail until your work is complete. There are **13 public suites**, with ProcessManager unit tests independent of socket work. Run `python3 tests/test_process_manager_unit.py` to isolate the PCB module, then `make test` for the integrated package. The suite starts its own deterministic Ollama-compatible HTTP fixture; a real LLM is not required for CI.
 
-To demonstrate the actual station, run Ollama `qwen2.5:0.5b` on your host (follow `docs/SETUP.md`), then run **only** `OLLAMA_MODEL=qwen2.5:0.5b bash demo/run_demo.sh ollama` in one Ubuntu terminal. The script starts both the C server and the web bridge; **do not also run `make run`**. Forward port `8765` in VS Code. Open `/` for Mission Control, `/station` for ECHO-9, `/workbench` for raw JSON experiments, and **`/processes` for native PCBs and controls**. Show Add → Terminate → Reap → Reactivate, repeated inference using one PID, and an explicitly removed identity blocked until reactivation.
+To demonstrate the actual station, run Ollama `qwen2.5:0.5b` on your host (follow `docs/SETUP.md`), then run **only** `OLLAMA_MODEL=qwen2.5:0.5b bash demo/run_demo.sh ollama` in one Ubuntu terminal. The script starts both the C server and the web bridge; **do not also run `make run`**. Forward port `8765` in VS Code. Open `/` for Mission Control, `/station` for ECHO-9, `/workbench` for raw JSON experiments, and **`/processes` for native PCBs and controls**. Show Add → Terminate (visual zombie) → Reap (dissolve) → Add again; separately demonstrate Remove → Reap → Reactivate, repeated inference using one PID, role-matched task assignment in the station, and an explicitly removed identity blocked until reactivation. New agents must be added through the managed station UI; Workbench can still demonstrate raw-protocol auto-registration.
 
 P1 remains **sequential**: during slow Ollama inference, the C service does not accept/complete another request. Native WAITING/INFERENCE represents its controlled logical lifecycle; it does not mean that the underlying model has been paused or that the station has multiple concurrent C agent threads. Distinguish C events from Python bridge observations.
 
 ## Grade and oral defense
 
-P1 contributes **10% of the total project grade**. Inside P1, the proposed rubric is **65% technical checks, 20% individual conceptual/code defense, 15% report/demo**. Technical allocation: M1.1=10, M1.2=10, M1.3=18, M1.4=7, PCB registration/ownership=12, transitions=12, terminate/wait/reap=12, disabled identities/reactivation=10, observed process/dispatcher/event integration=9 (all normalized within the technical component). The dispatcher and event bridge are **instructor-provided**; the last category grades whether *your ProcessManager* behaves correctly in integration, not changes to supplied modules.
+P1 contributes **10% of the total project grade**. Inside P1, the proposed rubric is **65% technical checks, 20% individual conceptual/code defense, 15% report/demo**. Technical allocation: M1.1=10, M1.2=10, M1.3=18, M1.4=7, PCB registration/ownership=12, transitions=12, terminate/wait/reap=12, disabled identities/reactivation=10, observed process/dispatcher/event integration=9 (all normalized within the technical component). The dispatcher and event bridge are **supplied**; the last category grades whether *your ProcessManager* behaves correctly in integration, not changes to supplied modules.
 
 Every member will present their own work and answer conceptual and code-level questions: processes versus programs/threads; Linux sockets and descriptors; framing and partial sends; how PID differs from `agent_id` and `request_id`; legal transitions and why invalid ones cannot mutate state; zombie retention, wait/reap and one successful collector; memory ownership; bad inputs; and why unauthenticated inference labels cannot authorize removal. Private D-Day includes unforeseen lifecycle and IPC cases. See the [public D-Day overview](D_DAY_OVERVIEW.md) for the assessment format. We assess understanding, not copied code or exact model wording.
 

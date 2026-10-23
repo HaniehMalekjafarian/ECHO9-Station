@@ -1,4 +1,4 @@
-# AgentOS M1 demo UI security (instructor-only)
+# AgentOS M1 — Local UI and Runtime Security
 
 The Python Mission Control service is a **local development tool**, not a public
 multi-user application. By default it binds to `127.0.0.1` inside its runtime.

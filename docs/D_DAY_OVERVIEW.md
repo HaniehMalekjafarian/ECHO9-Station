@@ -1,6 +1,6 @@
 # M1-P1 v2.0 — Public D-Day and Individual Oral Defense Overview
 
-Follow [the assignment](M1_Assignment.md) for grading, submission, AI use, and deadlines.
+This document explains the Phase 1 assessment format. Follow [the assignment](M1_Assignment.md) for grading, submission, AI use, and deadlines.
 
 D-Day assesses both student-owned modules: `src/main.c` (four Unix-socket server TODOs) and `src/process_manager.c` (PCB registration, transitions, zombies, wait/reap, identity removal/reactivation). You are not required to rewrite the supplied dispatcher, protocol parser, control plane, or ECHO-9 UI.
 
@@ -12,5 +12,8 @@ D-Day assesses both student-owned modules: `src/main.c` (four Unix-socket server
 - **Dynamic agents:** valid-request automatic registration, disabled identities, removing known/unknown names, reactivation with a fresh PID, and in-memory restart behavior.
 - **Integration:** real ProcessManager events, native `/processes` view, sequential inference lifecycle, and why no student-managed pthreads are used in P1.
 
-Every team member should be able to explain their code's invariants, pointer ownership, errors, and design decisions and demonstrate a normal lifecycle and a failure case. AI-assisted code must also be understood and disclosed. D-Day may include specification-compliant cases not covered by public tests; You are responsible for making sure your systems works correctly and reliably.
+Every team member should be able to explain their code's invariants, pointer ownership, errors, and design decisions and demonstrate a normal lifecycle and a failure case. AI-assisted code must also be understood and disclosed. Private D-Day may include specification-compliant cases not covered by public tests; this file does not reveal them. Responses from real Ollama are not graded by exact wording.
 
+## Required submissions
+
+Repository URL, exact commit SHA and final tag, the two student-owned C files, `README_SUBMISSION.md`, `AI_USE.md`, and any original tests. Report actual test results honestly. Do not submit non-public evaluation materials, runtime build output, or model weights.
