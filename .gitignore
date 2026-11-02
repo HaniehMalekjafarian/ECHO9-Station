@@ -1,0 +1,17 @@
+# Generated build files
+build/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Local environment configuration
+.env
+.env.local
+
+# Editor configuration
+.vscode/
+.idea/
