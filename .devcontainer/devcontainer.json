@@ -14,7 +14,8 @@
     }
   },
   "forwardPorts": [
-    8765
+    8765,
+    8766
   ],
   "runArgs": [
     "--add-host=host.docker.internal:host-gateway"

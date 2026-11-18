@@ -21,7 +21,7 @@ AgentOS is developed across five cumulative phases. Each phase introduces new op
 | Phase | Main topic | What you will build |
 |---|---|---|
 | **P1 — First Contact** | Processes and IPC | Complete the existing ProcessManager and Unix-socket server, implementing request communication, logical PCBs, and process lifecycle management. |
-| **P2 — Concurrent Operations** | Threads and synchronization | Introduce safe parallel agents using threads, mutexes, semaphores, bounded buffers, readers-writers mechanisms, and condition variables. |
+| **P2 — Concurrent Operations** | Threads and synchronization | Implement a concurrency runtime with deadlock detection, transitive priority inheritance, and transactional rollback under deterministic schedules. |
 | **P3 — Mission Scheduling** | Scheduling and multicore policies | Implement six scheduling algorithms, cooperative preemption, scheduling metrics, deadline handling, and logical multicore comparisons. |
 | **P4 — Resource Crisis** | Deadlocks and resource allocation | Implement resource-allocation mechanisms, deadlock prevention, Banker's algorithm and graph-based avoidance, deadlock detection, and recovery. |
 | **P5 — Memory and Recovery** | Memory and recovery | Implement memory allocation, segmentation, paging, TLB mechanisms, page replacement, and persistence. |
@@ -63,6 +63,12 @@ Do not introduce threads in Phase 1. Concurrency is introduced in Phase 2.
 **Official Phase 1 handout:** [P1 — First Contact](handouts/P1_First_Contact.pdf).
 
 Read the handout before implementing anything. It contains the full requirements, setup instructions, assessment rules, AI policy, and submission requirements.
+
+### Phase 2 — Concurrent Operations
+
+Read the [Phase 2 handout](handouts/M2_ASSIGNMENT.md) for the student-owned modules, public test cases, and grading rubric. Phase 2 uses the existing source, header, test, and demo directories.
+
+In the Ubuntu Dev Container, run `make m2` to build and `make test-m2` to run the 12 public tests. The untouched starter builds, and the tests are expected to fail until the TODOs are implemented.
 
 ### Important technical contracts
 

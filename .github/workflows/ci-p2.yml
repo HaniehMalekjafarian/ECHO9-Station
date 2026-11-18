@@ -1,0 +1,37 @@
+name: AgentOS P2 — Concurrency, Lockdep & Rollback
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-m2:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc make python3
+      - run: make m2
+  tests-m2:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build-m2
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - check: Functional tests
+            command: make test-m2
+          - check: Crisis simulator
+            command: make sim-m2
+          - check: AddressSanitizer and LeakSanitizer
+            command: make asan-m2
+          - check: ThreadSanitizer
+            command: make tsan-m2
+    name: ${{ matrix.check }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y gcc make python3
+      - run: ${{ matrix.command }}

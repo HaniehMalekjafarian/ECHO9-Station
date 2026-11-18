@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ECHO-9 · Concurrency & Lockdep</title>
+<style>
+:root{color-scheme:dark;--bg:#071322;--panel:#10253d;--border:#2b4d6b;--text:#e8f1fb;--muted:#aabfd3;--blue:#a7cefa;--mint:#6fdfb0;--amber:#ffcc8a;--red:#ffa9a0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,sans-serif}
+main{max-width:1180px;margin:auto;padding:25px}
+.eyebrow{color:#85afd6;letter-spacing:.12em;font-size:12px;font-family:ui-monospace,monospace;font-weight:700}
+h1{margin:.15em 0;font-size:28px}
+.links{margin:12px 0 20px;display:flex;gap:18px;flex-wrap:wrap}
+.links a{color:var(--blue);text-decoration:none;font-weight:600}
+.links a:hover{text-decoration:underline}
+.links a.active{color:#fff;border-bottom:2px solid var(--blue)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.muted{color:var(--muted);font-size:13px}
+.notice{color:#9cc1dd;min-height:22px;font-size:13px}
+.error{color:var(--red)}
+.success{color:var(--mint)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid-2{grid-template-columns:1fr}}
+
+button{border:1px solid #4779a2;background:#193d5c;color:white;cursor:pointer;padding:8px 14px;border-radius:7px;font:inherit;font-size:13px;font-weight:600}
+button:hover{background:#285479}
+button.danger{background:#5c1d1d;border-color:#a24747;color:#ffd0cc}
+button.danger:hover{background:#792828}
+button.mint{background:#1d5c41;border-color:#47a274;color:#ccffe2}
+button.mint:hover{background:#287955}
+
+/* WFG Canvas */
+.canvas-wrap{background:#050d18;border:1px solid #1c354d;border-radius:8px;position:relative;height:320px;overflow:hidden;margin-top:10px}
+#wfgCanvas{width:100%;height:100%;display:block}
+.canvas-legend{position:absolute;bottom:8px;left:8px;display:flex;gap:14px;background:rgba(10,25,43,0.85);padding:5px 10px;border-radius:6px;font-size:11px;font-family:ui-monospace,monospace}
+.leg-dot{width:8px;height:8px;display:inline-block;border-radius:50%;margin-right:4px}
+
+/* Priority Ladder */
+.ladder-item{display:grid;grid-template-columns:170px 60px 1fr 50px;align-items:center;gap:10px;padding:8px 10px;background:#0b1b2d;border:1px solid #1e3954;border-radius:6px;margin-bottom:8px}
+.ladder-name{font-weight:600;font-size:13px}
+.ladder-base{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+.ladder-bar-wrap{background:#060e19;height:14px;border-radius:4px;overflow:hidden;position:relative}
+.ladder-bar-base{position:absolute;top:0;left:0;height:100%;background:#304b66}
+.ladder-bar-eff{position:absolute;top:0;left:0;height:100%;background:var(--blue);transition:width .3s ease}
+.ladder-bar-eff.boost{background:var(--amber)}
+.ladder-eff{font-family:ui-monospace,monospace;font-weight:700;font-size:13px;text-align:right}
+
+/* Transaction Journal */
+.tx-list{max-height:220px;overflow-y:auto;background:#091422;border:1px solid #1e3750;border-radius:8px;padding:8px}
+.tx-row{display:flex;justify-content:space-between;padding:6px 10px;border-bottom:1px solid #152638;font-family:ui-monospace,monospace;font-size:12px}
+.tx-row:last-child{border-bottom:0}
+.tx-row.reverting{background:#3a1818;color:#ffb3b3}
+
+/* Metrics row */
+.metric-box{background:#0d2035;border:1px solid #234360;border-radius:8px;padding:12px 16px;flex:1;min-width:180px}
+.metric-box label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-family:ui-monospace,monospace}
+.metric-box strong{font-size:22px;font-family:ui-monospace,monospace;margin-top:2px;display:block}
+
+/* Console logs */
+.log-box{background:#050d18;border:1px solid #1c354d;border-radius:8px;padding:12px;max-height:240px;overflow-y:auto;font-family:ui-monospace,monospace;font-size:12px;color:#9ec2e6}
+.log-entry{margin-bottom:4px}
+.log-panic{color:var(--red);font-weight:700}
+.log-success{color:var(--mint);font-weight:600}
+.log-warn{color:var(--amber)}
+</style>
+</head>
+<body>
+<main>
+<div class="eyebrow">AGENTOS // ECHO-9 STATION · PHASE 2</div>
+<h1>Concurrency Runtime & Lockdep</h1>
+<p class="muted">Interactive examples of wait-for graphs, transitive priority inheritance, and transactional rollback.</p>
+
+<nav class="links">
+  <a href="http://127.0.0.1:8765/">Phase 1 Mission Control</a>
+  <a href="/station">Station Preview</a>
+  <a href="http://127.0.0.1:8765/processes">Phase 1 Process Monitor</a>
+  <a href="/concurrency" class="active">Concurrency & Lockdep</a>
+  <a href="http://127.0.0.1:8765/workbench">Phase 1 Workbench</a>
+</nav>
+
+<div class="row" style="margin-bottom:16px">
+  <div class="metric-box">
+    <label>Active Threads</label>
+    <strong id="m-threads" style="color:var(--blue)">6 / 64</strong>
+  </div>
+  <div class="metric-box">
+    <label>Graph State</label>
+    <strong id="m-graph" style="color:var(--mint)">Acyclic (No Deadlock)</strong>
+  </div>
+  <div class="metric-box">
+    <label>Priority Ceiling</label>
+    <strong id="m-prio" style="color:var(--amber)">Prio 95 (Normal)</strong>
+  </div>
+  <div class="metric-box">
+    <label>Core Temperature</label>
+    <strong id="m-temp" style="color:var(--mint)">850 K (Nominal)</strong>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Pillar I -->
+  <div class="panel">
+    <h2>Pillar I: Bipartite WFG & Tarjan Cycle Detection</h2>
+    <p class="muted">Evaluates cycle formation in O(V+E) before thread sleep. Aborts with exit code 99 on circular wait.</p>
+    <div class="row" style="margin:10px 0">
+      <button class="danger" id="btn-deadlock">Inject Circular Deadlock</button>
+      <button id="btn-reset-wfg">Reset Graph</button>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="wfgCanvas"></canvas>
+      <div class="canvas-legend">
+        <span><i class="leg-dot" style="background:#5aa7ff"></i>Thread</span>
+        <span><i class="leg-dot" style="background:#ffb347"></i>Mutex</span>
+        <span><i class="leg-dot" style="background:var(--mint)"></i>Holds</span>
+        <span><i class="leg-dot" style="background:var(--red)"></i>Deadlock Cycle</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pillar II -->
+  <div class="panel">
+    <h2>Pillar II: Transitive Priority Inheritance (PIP)</h2>
+    <p class="muted">Transitive propagation across multi-hop contention chains with monotonic decay upon lock release.</p>
+    <div class="row" style="margin:10px 0">
+      <button id="btn-inversion">Trigger Priority Inversion</button>
+      <button class="mint" id="btn-decay">Release & Monotonic Decay</button>
+    </div>
+    <div id="ladder-container" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<div class="grid-2">
+  <!-- Pillar III -->
+  <div class="panel">
+    <h2>Pillar III: Transactional Memory Rollback (LIFO)</h2>
+    <p class="muted">Pre-image arena capturing memory before dirty writes. Unwinds in strict LIFO order prior to lock release.</p>
+    <div class="row" style="margin:10px 0">
+      <button id="btn-tx-mutate">Record Mutation</button>
+      <button class="danger" id="btn-tx-abort">Abort & LIFO Rollback</button>
+      <button class="mint" id="btn-tx-commit">Commit TX</button>
+    </div>
+    <div class="tx-list" id="tx-entries">
+      <div class="tx-row" style="color:var(--muted)">Transaction TX-442 initialized. Ready for journaled mutations.</div>
+    </div>
+  </div>
+
+  <!-- Capstone Crisis -->
+  <div class="panel">
+    <h2>Pillar IV & Capstone: ECHO-9 Reactor Crisis</h2>
+    <p class="muted">Simulates 6 concurrent agents under coolant cavitation, radiation baffle failure, and AI abort.</p>
+    <div class="row" style="margin:10px 0">
+      <button class="danger" id="btn-run-crisis">▶ Run Reactor Crisis Sim</button>
+      <button id="btn-clear-log">Clear Log</button>
+    </div>
+    <div class="log-box" id="crisis-log">
+      <div class="log-entry">Choose a scenario to see its simulated events here.</div>
+    </div>
+  </div>
+</div>
+</main>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+
+const threads = [
+  { id: 'T1', name: 'Life Support (T1)', base: 95, eff: 95 },
+  { id: 'T2', name: 'Coolant Pump (T2)', base: 90, eff: 90 },
+  { id: 'T3', name: 'Radiation Baffle (T3)', base: 70, eff: 70 },
+  { id: 'T4', name: 'Emergency Power (T4)', base: 50, eff: 50 },
+  { id: 'T5', name: 'AI Co-Pilot (T5)', base: 30, eff: 30 },
+  { id: 'T6', name: 'Telemetry Logger (T6)', base: 10, eff: 10 }
+];
+
+function renderLadder() {
+  const c = $('ladder-container');
+  c.innerHTML = '';
+  threads.forEach(t => {
+    const isElevated = t.eff > t.base;
+    const d = document.createElement('div');
+    d.className = 'ladder-item';
+    d.innerHTML = `
+      <div class="ladder-name">${t.name}</div>
+      <div class="ladder-base">Base: ${t.base}</div>
+      <div class="ladder-bar-wrap">
+        <div class="ladder-bar-base" style="width:${t.base}%"></div>
+        <div class="ladder-bar-eff ${isElevated?'boost':''}" style="width:${t.eff}%"></div>
+      </div>
+      <div class="ladder-eff" style="${isElevated?'color:var(--amber)':''}">${t.eff}</div>
+    `;
+    c.appendChild(d);
+  });
+  const maxEff = Math.max(...threads.map(t => t.eff));
+  $('m-prio').innerText = `Prio ${maxEff} (${maxEff > 90 ? 'Elevated' : 'Normal'})`;
+  $('m-prio').style.color = maxEff > 90 ? 'var(--red)' : 'var(--amber)';
+}
+
+// Canvas WFG
+const canvas = $('wfgCanvas');
+const ctx = canvas.getContext('2d');
+const nodes = [
+  { id: 'T2', type: 'thread', label: 'T2', x: 0.25, y: 0.3 },
+  { id: 'M1', type: 'mutex', label: 'M1', x: 0.5, y: 0.3 },
+  { id: 'T6', type: 'thread', label: 'T6', x: 0.75, y: 0.3 },
+  { id: 'M2', type: 'mutex', label: 'M2', x: 0.5, y: 0.75 },
+  { id: 'T1', type: 'thread', label: 'T1', x: 0.2, y: 0.75 },
+  { id: 'T4', type: 'thread', label: 'T4', x: 0.8, y: 0.75 }
+];
+let edges = [
+  { from: 'M1', to: 'T6', type: 'hold' },
+  { from: 'T2', to: 'M1', type: 'wait' }
+];
+
+function resizeCanvas() {
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+  drawWFG();
+}
+window.addEventListener('resize', resizeCanvas);
+
+function drawWFG() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const w = canvas.width, h = canvas.height;
+
+  edges.forEach(e => {
+    const s = nodes.find(n => n.id === e.from);
+    const d = nodes.find(n => n.id === e.to);
+    if (!s || !d) return;
+    const sx = s.x * w, sy = s.y * h, dx = d.x * w, dy = d.y * h;
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(dx, dy);
+    ctx.strokeStyle = e.isCycle ? '#ffa9a0' : (e.type === 'hold' ? '#6fdfb0' : '#ffcc8a');
+    ctx.lineWidth = e.isCycle ? 3 : 2;
+    if (e.isCycle) ctx.setLineDash([6, 3]); else ctx.setLineDash([]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Arrowhead
+    const angle = Math.atan2(dy - sy, dx - sx);
+    const headlen = 8;
+    const ax = dx - Math.cos(angle) * 18, ay = dy - Math.sin(angle) * 18;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay);
+    ctx.lineTo(ax - headlen * Math.cos(angle - Math.PI / 6), ay - headlen * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(ax - headlen * Math.cos(angle + Math.PI / 6), ay - headlen * Math.sin(angle + Math.PI / 6));
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.fill();
+  });
+
+  nodes.forEach(n => {
+    const nx = n.x * w, ny = n.y * h;
+    ctx.beginPath();
+    if (n.type === 'thread') {
+      ctx.arc(nx, ny, 16, 0, 2 * Math.PI);
+      ctx.fillStyle = '#0a1d30';
+      ctx.fill();
+      ctx.strokeStyle = '#5aa7ff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else {
+      ctx.rect(nx - 14, ny - 14, 28, 28);
+      ctx.fillStyle = '#261c10';
+      ctx.fill();
+      ctx.strokeStyle = '#ffb347';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 10px ui-monospace, monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(n.id, nx, ny + 3.5);
+  });
+}
+
+function log(msg, cls='') {
+  const b = $('crisis-log');
+  const d = document.createElement('div');
+  d.className = 'log-entry ' + cls;
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  b.appendChild(d);
+  b.scrollTop = b.scrollHeight;
+}
+
+$('btn-deadlock').onclick = () => {
+  edges = [
+    { from: 'M1', to: 'T6', type: 'hold' },
+    { from: 'T2', to: 'M1', type: 'wait', isCycle: true },
+    { from: 'M2', to: 'T2', type: 'hold', isCycle: true },
+    { from: 'T6', to: 'M2', type: 'wait', isCycle: true }
+  ];
+  drawWFG();
+  $('m-graph').innerText = 'DEADLOCK CYCLE DETECTED!';
+  $('m-graph').style.color = 'var(--red)';
+  log('Tarjan SCC Algorithm: Cycle found: T6 -> M2 -> T2 -> M1 -> T6', 'log-panic');
+  log('DEADLOCK_PANIC(99) triggered! Backtrace dumped safely.', 'log-panic');
+};
+
+$('btn-reset-wfg').onclick = () => {
+  edges = [
+    { from: 'M1', to: 'T6', type: 'hold' },
+    { from: 'T2', to: 'M1', type: 'wait' }
+  ];
+  drawWFG();
+  $('m-graph').innerText = 'Acyclic (No Deadlock)';
+  $('m-graph').style.color = 'var(--mint)';
+  log('Wait-For-Graph reset to nominal state.');
+};
+
+$('btn-inversion').onclick = () => {
+  log('T2 (Coolant, Prio 90) waits on M1 held by T6 (Logger, Base 10)...', 'log-warn');
+  threads[5].eff = 90;
+  renderLadder();
+  log('PIP: T6 inherited priority elevated dynamically: 10 -> 90', 'log-success');
+};
+
+$('btn-decay').onclick = () => {
+  log('T6 finishes critical section and releases M1.', 'log-warn');
+  threads[5].eff = threads[5].base;
+  renderLadder();
+  log('PIP: T6 monotonic decay back to base priority 10.', 'log-success');
+};
+
+let txStack = [];
+let txSeq = 1;
+$('btn-tx-mutate').onclick = () => {
+  const fields = [
+    { f: 'coolant_valve_pct', pre: 20, post: 85 },
+    { f: 'reactor_flux_limit', pre: 1000, post: 1450 },
+    { f: 'containment_baffle_angle', pre: 12, post: 68 }
+  ];
+  const field = fields[(txSeq - 1) % fields.length];
+  const item = { id: txSeq++, ...field };
+  txStack.push(item);
+  const el = document.createElement('div');
+  el.className = 'tx-row';
+  el.id = 'tx-item-' + item.id;
+  el.innerHTML = `<span>#${item.id} <code>${item.f}</code></span><span>pre: ${item.pre} → post: <b style="color:var(--mint)">${item.post}</b></span>`;
+  $('tx-entries').prepend(el);
+  log(`[TX-442] Pre-image captured: ${item.f} = ${item.pre}`);
+};
+
+$('btn-tx-abort').onclick = async () => {
+  if (!txStack.length) return log('TX journal is empty.', 'log-warn');
+  log(`[TX ABORT] Triggering LIFO Rollback of ${txStack.length} entries...`, 'log-panic');
+  while (txStack.length > 0) {
+    const item = txStack.pop();
+    const el = $('tx-item-' + item.id);
+    if (el) el.className = 'tx-row reverting';
+    log(`[ROLLBACK LIFO] Restoring ${item.f} = ${item.pre}...`, 'log-warn');
+    await new Promise(r => setTimeout(r, 220));
+    if (el) el.remove();
+  }
+  log('Rollback complete: Pre-image memory restored BEFORE mutexes unlocked!', 'log-success');
+};
+
+$('btn-tx-commit').onclick = () => {
+  const count = txStack.length;
+  txStack = [];
+  $('tx-entries').innerHTML = `<div class="tx-row" style="color:var(--mint)">Transaction committed successfully (${count} operations persisted).</div>`;
+  log(`[TX COMMIT] Committed ${count} mutations. Pre-image arena cleared.`, 'log-success');
+};
+
+$('btn-run-crisis').onclick = async () => {
+  log('=== LAUNCHING ECHO-9 REACTOR CRISIS MANEUVER ===', 'log-warn');
+  $('m-temp').innerText = '1450 K (Warning)';
+  $('m-temp').style.color = 'var(--amber)';
+  $('btn-inversion').click();
+  await new Promise(r => setTimeout(r, 800));
+  $('m-temp').innerText = '2250 K (Critical)';
+  $('m-temp').style.color = 'var(--red)';
+  log('Phase 2: Burst AI Co-Pilot crashed mid-transaction!', 'log-panic');
+  $('btn-tx-mutate').click();
+  $('btn-tx-mutate').click();
+  await new Promise(r => setTimeout(r, 800));
+  $('btn-tx-abort').click();
+  await new Promise(r => setTimeout(r, 800));
+  $('btn-decay').click();
+  $('m-temp').innerText = '460 K (Cold Shutdown)';
+  $('m-temp').style.color = 'var(--mint)';
+  log('Phase 4: Cold shutdown achieved. Invariants preserved!', 'log-success');
+};
+
+$('btn-clear-log').onclick = () => { $('crisis-log').innerHTML = ''; };
+
+renderLadder();
+setTimeout(resizeCanvas, 80);
+</script>
+</body>
+</html>

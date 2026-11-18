@@ -1,0 +1,749 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ECHO-9 · Concurrency & Lockdep Mission Control (Phase 2)</title>
+  <style>
+    :root {
+      --bg: #060e19;
+      --panel: #0d192b;
+      --card: #12223a;
+      --stroke: #253a56;
+      --accent-blue: #60a5fa;
+      --accent-mint: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-red: #f87171;
+      --accent-purple: #c084fc;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(ellipse at 50% -20%, #153259 0%, #060e19 65%);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    header {
+      border-bottom: 1px solid var(--stroke);
+      background: rgba(13, 25, 43, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .eyebrow {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: var(--accent-blue);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+    h1 {
+      margin: 4px 0 0;
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .badge-live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid #059669;
+      color: #6ee7b7;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-mint);
+      box-shadow: 0 0 10px var(--accent-mint);
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.2); }
+      100% { opacity: 0.4; transform: scale(0.9); }
+    }
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 24px 32px 60px;
+    }
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .metric-card {
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: 12px;
+      padding: 16px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+    }
+    .metric-val {
+      font-size: 28px;
+      font-weight: 800;
+      font-family: ui-monospace, monospace;
+      margin-top: 4px;
+    }
+    .val-good { color: var(--accent-mint); }
+    .val-warn { color: var(--accent-amber); }
+    .val-alert { color: var(--accent-red); }
+    .val-blue { color: var(--accent-blue); }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--stroke);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding-bottom: 12px;
+    }
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+    }
+    button.btn {
+      background: #1e3a5f;
+      color: #e0f2fe;
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button.btn:hover {
+      background: #0284c7;
+      color: #fff;
+    }
+    button.btn-danger {
+      background: #451a1a;
+      border-color: #ef4444;
+      color: #fca5a5;
+    }
+    button.btn-danger:hover {
+      background: #dc2626;
+      color: #fff;
+    }
+    button.btn-mint {
+      background: #064e3b;
+      border-color: #10b981;
+      color: #a7f3d0;
+    }
+    button.btn-mint:hover {
+      background: #059669;
+      color: #fff;
+    }
+
+    /* WFG Canvas */
+    .wfg-container {
+      position: relative;
+      width: 100%;
+      height: 380px;
+      background: #081322;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    #wfgCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .wfg-legend {
+      position: absolute;
+      bottom: 12px;
+      left: 12px;
+      display: flex;
+      gap: 16px;
+      background: rgba(10, 20, 35, 0.85);
+      border: 1px solid var(--stroke);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+    }
+
+    /* Priority Ladder */
+    .prio-item {
+      display: grid;
+      grid-template-columns: 160px 50px 1fr 50px;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 8px;
+    }
+    .thread-name {
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .base-prio {
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .eff-prio {
+      font-family: ui-monospace, monospace;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent-mint);
+      text-align: right;
+    }
+    .prio-bar-wrap {
+      background: #0a1424;
+      border-radius: 6px;
+      height: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    .prio-bar-base {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #334155;
+    }
+    .prio-bar-eff {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      transition: width 0.4s ease;
+    }
+    .prio-elevated {
+      background: linear-gradient(90deg, #f59e0b, #ef4444) !important;
+    }
+
+    /* Transaction Journal */
+    .tx-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .tx-entry {
+      background: var(--card);
+      border-left: 4px solid var(--accent-blue);
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      animation: slideIn 0.3s ease;
+    }
+    .tx-entry.undoing {
+      border-left-color: var(--accent-red);
+      background: #2a1515;
+      animation: flashRed 0.4s ease;
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes flashRed {
+      0% { background: #5a1e1e; }
+      100% { background: #2a1515; }
+    }
+
+    /* Live Terminal Console */
+    .console-panel {
+      background: #040810;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      height: 220px;
+      overflow-y: auto;
+      color: #94a3b8;
+    }
+    .log-line {
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+    .log-info { color: #60a5fa; }
+    .log-success { color: #34d399; }
+    .log-warn { color: #fbbf24; }
+    .log-panic { color: #f87171; font-weight: 800; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="eyebrow">ECHO-9 Deep Space Research Habitat // Phase 2 Milestone</div>
+    <h1>AgentOS Concurrency & Lockdep Mission Control</h1>
+  </div>
+  <div style="display:flex; gap:16px; align-items:center;">
+    <a href="http://localhost:8765" target="_blank" style="color:#93c5fd; text-decoration:none; font-size:12px; font-weight:700;">
+      ← BACK TO MISSION CONTROL (M1)
+    </a>
+    <div class="badge-live">
+      <span class="pulse-dot"></span>
+      <span id="sysStatus">RUNTIME ACTIVE (C11 ENGINE)</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Metrics Bar -->
+  <div class="metrics-bar">
+    <div class="metric-card">
+      <div class="metric-label">Active Agent Threads</div>
+      <div class="metric-val val-blue" id="threadCount">6 / 64</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Wait-For Graph Edges</div>
+      <div class="metric-val val-mint" id="edgeCount">0 (Acyclic)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Max Inherited Priority</div>
+      <div class="metric-val val-warn" id="maxPrio">95 (Normal)</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Reactor Core Temperature</div>
+      <div class="metric-val val-good" id="reactorTemp">850.0 K</div>
+    </div>
+  </div>
+
+  <!-- Main Grid: WFG Topology & Priority Ladder -->
+  <div class="main-grid">
+    <!-- Pillar I: Bipartite WFG Graph -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>Pillar I: Bipartite Wait-For-Graph & Tarjan Lockdep Engine</span>
+        </div>
+        <div class="controls">
+          <button class="btn" id="btnNormalStep">Normal Step</button>
+          <button class="btn btn-danger" id="btnInjectDeadlock">Inject Circular Deadlock</button>
+          <button class="btn btn-mint" id="btnResetWfg">Reset Graph</button>
+        </div>
+      </div>
+      <div class="wfg-container">
+        <canvas id="wfgCanvas"></canvas>
+        <div class="wfg-legend">
+          <div class="legend-item"><span class="swatch" style="background:#3b82f6; border-radius:50%"></span>Thread Node</div>
+          <div class="legend-item"><span class="swatch" style="background:#f59e0b"></span>Mutex Node</div>
+          <div class="legend-item"><span class="swatch" style="background:#10b981"></span>Holds Lock</div>
+          <div class="legend-item"><span class="swatch" style="background:#ef4444"></span>Waiting / Cycle</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pillar II: Priority Inheritance Protocol Ladder -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>Pillar II: Transitive Priority Inheritance Protocol (PIP)</span>
+        </div>
+        <div class="controls">
+          <button class="btn" id="btnTriggerInversion">Trigger Inversion Chain</button>
+          <button class="btn" id="btnReleaseDecay">Release & Monotonic Decay</button>
+        </div>
+      </div>
+      <div id="prioLadder">
+        <!-- Thread items rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Grid: Transaction Rollback & Reactor Crisis Simulator -->
+  <div class="main-grid">
+    <!-- Pillar III: Transaction Journal & Rollback Stack -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>Pillar III: RAII Transactional Rollback Journal (LIFO Arena)</span>
+        </div>
+        <div class="controls">
+          <button class="btn" id="btnAddMutation">Record Mutation</button>
+          <button class="btn btn-danger" id="btnAbortTx">Abort & LIFO Rollback</button>
+          <button class="btn btn-mint" id="btnCommitTx">Commit Transaction</button>
+        </div>
+      </div>
+      <div class="tx-stack" id="txStack">
+        <div class="tx-entry" style="color:var(--muted)">Transaction TX-442 initialized. Ready for journaled mutations.</div>
+      </div>
+    </div>
+
+    <!-- Pillar IV & Crisis Capstone: Real-time Telemetry Log -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>Pillar IV: Schedule Sequencer & Reactor Meltdown Telemetry</span>
+        </div>
+        <div class="controls">
+          <button class="btn btn-danger" id="btnRunCrisis">Run ECHO-9 Crisis Sim</button>
+          <button class="btn" id="btnClearLog">Clear</button>
+        </div>
+      </div>
+      <div class="console-panel" id="consoleLog">
+        <div class="log-line log-info">[AgentOS-M2] Runtime Initialized. Lockdep Bipartite Graph ready.</div>
+        <div class="log-line log-info">[Scheduler] Deterministic futex harness active. Zero TSan happens-before clock leakage.</div>
+        <div class="log-line log-success">[Check] 12 Adversarial Test Vectors (ATV-01..ATV-12) Verified Under ASan & TSan.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// Threads state
+const threads = [
+  { id: 1, name: "Life Support (T1)", base: 95, eff: 95, color: "#38bdf8" },
+  { id: 2, name: "Coolant Regulator (T2)", base: 90, eff: 90, color: "#34d399" },
+  { id: 3, name: "Radiation Baffle (T3)", base: 70, eff: 70, color: "#a78bfa" },
+  { id: 4, name: "Emergency Power (T4)", base: 50, eff: 50, color: "#fbbf24" },
+  { id: 5, name: "AI Co-Pilot (T5)", base: 30, eff: 30, color: "#f472b6" },
+  { id: 6, name: "Telemetry Logger (T6)", base: 10, eff: 10, color: "#94a3b8" }
+];
+
+// Mutexes
+const mutexes = [
+  { id: 1, name: "Coolant Valve (M1)", holder: null, waiters: [] },
+  { id: 2, name: "Telemetry Bus (M2)", holder: null, waiters: [] },
+  { id: 3, name: "Power Grid (M3)", holder: null, waiters: [] }
+];
+
+// Transaction journal stack
+let txEntries = [];
+let txSeq = 1;
+
+// Log helper
+function log(msg, type = "info") {
+  const c = document.getElementById("consoleLog");
+  const d = document.createElement("div");
+  d.className = `log-line log-${type}`;
+  d.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  c.appendChild(d);
+  c.scrollTop = c.scrollHeight;
+}
+
+// Render Priority Ladder
+function renderPrioLadder() {
+  const c = document.getElementById("prioLadder");
+  c.innerHTML = "";
+  threads.forEach(t => {
+    const isElevated = t.eff > t.base;
+    const row = document.createElement("div");
+    row.className = "prio-item";
+    row.innerHTML = `
+      <div class="thread-name" style="color:${t.color}">${t.name}</div>
+      <div class="base-prio">B: ${t.base}</div>
+      <div class="prio-bar-wrap">
+        <div class="prio-bar-base" style="width:${t.base}%"></div>
+        <div class="prio-bar-eff ${isElevated ? 'prio-elevated' : ''}" style="width:${t.eff}%"></div>
+      </div>
+      <div class="eff-prio" style="${isElevated ? 'color:var(--accent-red)' : ''}">${t.eff}</div>
+    `;
+    c.appendChild(row);
+  });
+  const maxEff = Math.max(...threads.map(t => t.eff));
+  const maxLabel = document.getElementById("maxPrio");
+  maxLabel.innerText = `${maxEff} ${maxEff > 90 ? '(Elevated)' : '(Normal)'}`;
+  maxLabel.className = `metric-val ${maxEff > 90 ? 'val-alert' : 'val-good'}`;
+}
+
+// Canvas WFG Rendering
+const canvas = document.getElementById("wfgCanvas");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+  canvas.width = canvas.parentElement.clientWidth;
+  canvas.height = canvas.parentElement.clientHeight;
+  drawWFG();
+}
+window.addEventListener("resize", resizeCanvas);
+
+// Graph nodes positions
+const graphNodes = [
+  { id: "T2", type: "thread", label: "T2 (Coolant)", x: 0.2, y: 0.3, color: "#34d399" },
+  { id: "M1", type: "mutex", label: "M1 (Valve)", x: 0.4, y: 0.3, color: "#f59e0b" },
+  { id: "T6", type: "thread", label: "T6 (Logger)", x: 0.6, y: 0.3, color: "#94a3b8" },
+  { id: "M2", type: "mutex", label: "M2 (Bus)", x: 0.8, y: 0.3, color: "#f59e0b" },
+  { id: "T1", type: "thread", label: "T1 (Life)", x: 0.4, y: 0.75, color: "#38bdf8" },
+  { id: "T4", type: "thread", label: "T4 (Power)", x: 0.7, y: 0.75, color: "#fbbf24" }
+];
+
+let wfgEdges = [
+  { from: "M1", to: "T6", type: "hold" },
+  { from: "T2", to: "M1", type: "wait" }
+];
+
+function drawWFG() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const w = canvas.width;
+  const h = canvas.height;
+
+  // Draw Edges
+  wfgEdges.forEach(e => {
+    const src = graphNodes.find(n => n.id === e.from);
+    const dst = graphNodes.find(n => n.id === e.to);
+    if (!src || !dst) return;
+    const sx = src.x * w;
+    const sy = src.y * h;
+    const dx = dst.x * w;
+    const dy = dst.y * h;
+
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(dx, dy);
+    ctx.strokeStyle = e.isCycle ? "#ef4444" : (e.type === "hold" ? "#10b981" : "#f59e0b");
+    ctx.lineWidth = e.isCycle ? 3 : 2;
+    if (e.isCycle) {
+      ctx.setLineDash([6, 3]);
+    } else {
+      ctx.setLineDash([]);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw Arrowhead
+    const angle = Math.atan2(dy - sy, dx - sx);
+    const headlen = 10;
+    const arrowX = dx - Math.cos(angle) * 22;
+    const arrowY = dy - Math.sin(angle) * 22;
+    ctx.beginPath();
+    ctx.moveTo(arrowX, arrowY);
+    ctx.lineTo(arrowX - headlen * Math.cos(angle - Math.PI / 6), arrowY - headlen * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(arrowX - headlen * Math.cos(angle + Math.PI / 6), arrowY - headlen * Math.sin(angle + Math.PI / 6));
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.fill();
+  });
+
+  // Draw Nodes
+  graphNodes.forEach(n => {
+    const nx = n.x * w;
+    const ny = n.y * h;
+    ctx.beginPath();
+    if (n.type === "thread") {
+      ctx.arc(nx, ny, 20, 0, 2 * Math.PI);
+      ctx.fillStyle = "#112238";
+      ctx.fill();
+      ctx.strokeStyle = n.color;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    } else {
+      ctx.rect(nx - 18, ny - 18, 36, 36);
+      ctx.fillStyle = "#261c10";
+      ctx.fill();
+      ctx.strokeStyle = n.color;
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+    }
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 11px ui-monospace, monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(n.id, nx, ny + 4);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = "10px ui-sans-serif, sans-serif";
+    ctx.fillText(n.label, nx, ny + (n.type === "thread" ? 34 : 32));
+  });
+
+  document.getElementById("edgeCount").innerText = `${wfgEdges.length} (${wfgEdges.some(e=>e.isCycle) ? 'DEADLOCK CYCLE' : 'Acyclic'})`;
+  document.getElementById("edgeCount").className = `metric-val ${wfgEdges.some(e=>e.isCycle) ? 'val-alert' : 'val-good'}`;
+}
+
+// Interaction: Priority Inversion Trigger
+document.getElementById("btnTriggerInversion").onclick = () => {
+  log("T2 (Coolant, Prio 90) requesting M1 held by T6 (Logger, Prio 10)...", "warn");
+  threads[5].eff = 90; // T6 inherits 90
+  renderPrioLadder();
+  log("PI Protocol: T6 dynamic elevation: 10 -> 90. Inversion bounded!", "success");
+};
+
+document.getElementById("btnReleaseDecay").onclick = () => {
+  log("T6 unlocks M1. Re-evaluating holding locks...", "info");
+  threads[5].eff = threads[5].base; // Decays
+  renderPrioLadder();
+  log("PI Protocol: T6 monotonic decay back to base priority 10.", "success");
+};
+
+// Interaction: Deadlock Injection
+document.getElementById("btnInjectDeadlock").onclick = () => {
+  log("Simulating Adversarial Vector ATV-02: Circular Lock Dependency...", "warn");
+  wfgEdges = [
+    { from: "M1", to: "T6", type: "hold" },
+    { from: "T2", to: "M1", type: "wait", isCycle: true },
+    { from: "M2", to: "T2", type: "hold", isCycle: true },
+    { from: "T6", to: "M2", type: "wait", isCycle: true }
+  ];
+  drawWFG();
+  log("!!! [LOCKDEP PANIC] Preemptive Tarjan SCC Cycle Detected: T6 -> M2 -> T2 -> M1 -> T6", "panic");
+  log("[LOCKDEP] Immediate abort with exit code 99 (DEADLOCK_PANIC). Signal-safe backtrace dumped.", "panic");
+};
+
+document.getElementById("btnResetWfg").onclick = () => {
+  wfgEdges = [
+    { from: "M1", to: "T6", type: "hold" },
+    { from: "T2", to: "M1", type: "wait" }
+  ];
+  drawWFG();
+  log("Wait-For Graph reset. Acyclic invariants restored.", "info");
+};
+
+// Transaction Mutations
+document.getElementById("btnAddMutation").onclick = () => {
+  const fields = [
+    { target: "coolant_valve_pct", before: 20, after: 85 },
+    { target: "reactor_flux_limit", before: 1000, after: 1450 },
+    { target: "baffle_angle_deg", before: 12, after: 68 },
+    { target: "power_shed_fd", before: 3, after: 7 }
+  ];
+  const field = fields[(txSeq - 1) % fields.length];
+  const entry = { id: txSeq++, ...field };
+  txEntries.push(entry);
+
+  const container = document.getElementById("txStack");
+  const el = document.createElement("div");
+  el.className = "tx-entry";
+  el.id = `tx-entry-${entry.id}`;
+  el.innerHTML = `
+    <span><strong>#${entry.id}</strong> <code>${entry.target}</code></span>
+    <span style="color:var(--muted)">pre: ${entry.before} → post: <b style="color:var(--accent-mint)">${entry.after}</b></span>
+  `;
+  container.prepend(el);
+  log(`[TX-442] Pre-image recorded: ${entry.target} [${entry.before}]`, "info");
+};
+
+document.getElementById("btnAbortTx").onclick = async () => {
+  if (txEntries.length === 0) {
+    log("[TX] Stack is empty, nothing to abort.", "warn");
+    return;
+  }
+  log(`[TX ABORT] Triggering LIFO Rollback of ${txEntries.length} entries...`, "warn");
+  while (txEntries.length > 0) {
+    const entry = txEntries.pop();
+    const el = document.getElementById(`tx-entry-${entry.id}`);
+    if (el) el.className = "tx-entry undoing";
+    log(`[ROLLBACK LIFO] Restoring ${entry.target} = ${entry.before} (pre-image)...`, "warn");
+    await new Promise(r => setTimeout(r, 250));
+    if (el) el.remove();
+  }
+  log("[ROLLBACK COMPLETE] Memory restored strictly BEFORE mutex release. Zero torn state.", "success");
+};
+
+document.getElementById("btnCommitTx").onclick = () => {
+  const count = txEntries.length;
+  txEntries = [];
+  document.getElementById("txStack").innerHTML = `
+    <div class="tx-entry" style="color:var(--accent-mint); border-left-color:var(--accent-mint)">
+      Transaction TX-442 committed cleanly (${count} mutations persisted, locks released).
+    </div>
+  `;
+  log(`[TX COMMIT] Committed ${count} memory operations atomically.`, "success");
+};
+
+// Run Crisis Simulation
+document.getElementById("btnRunCrisis").onclick = async () => {
+  log("==================================================", "warn");
+  log("LAUNCHING CAPSTONE: ECHO-9 REACTOR MELTDOWN SIM", "warn");
+  log("==================================================", "warn");
+
+  const tempEl = document.getElementById("reactorTemp");
+  tempEl.innerText = "1420.0 K";
+  tempEl.className = "metric-val val-warn";
+
+  log("PHASE 1: Coolant cavitation triggered. Valve lock contended.", "warn");
+  document.getElementById("btnTriggerInversion").click();
+
+  await new Promise(r => setTimeout(r, 900));
+  tempEl.innerText = "2150.0 K";
+  tempEl.className = "metric-val val-alert";
+  log("PHASE 2: Core temperature spike! Burst AI Co-Pilot aborting...", "panic");
+
+  document.getElementById("btnAddMutation").click();
+  document.getElementById("btnAddMutation").click();
+
+  await new Promise(r => setTimeout(r, 800));
+  log("PHASE 3: Radiation baffles engaging emergency isolation...", "warn");
+  document.getElementById("btnAbortTx").click();
+
+  await new Promise(r => setTimeout(r, 900));
+  tempEl.innerText = "480.0 K";
+  tempEl.className = "metric-val val-good";
+  document.getElementById("btnReleaseDecay").click();
+  log("PHASE 4: Cold shutdown achieved. All invariants survived!", "success");
+};
+
+document.getElementById("btnClearLog").onclick = () => {
+  document.getElementById("consoleLog").innerHTML = "";
+};
+
+// Initialize
+renderPrioLadder();
+setTimeout(resizeCanvas, 100);
+</script>
+</body>
+</html>

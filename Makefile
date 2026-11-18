@@ -45,3 +45,48 @@ test: all
 
 clean:
 	rm -rf build
+
+# Phase 2 builds independently of the Phase 1 server and its libraries.
+M2_BUILD_DIR ?= build/m2
+M2_CFLAGS = -std=c11 -Wall -Wextra -Werror -pedantic -g -Iinclude -pthread $(M2_SANITIZERS)
+M2_LDFLAGS = -pthread -rdynamic $(M2_SANITIZERS)
+M2_MODULES = agentos_lockdep agentos_pip agentos_tx agentos_mutex harness_sched echo9_crisis_sim
+M2_LIB_OBJECTS = $(addprefix $(M2_BUILD_DIR)/,$(addsuffix .o,$(M2_MODULES)))
+M2_OBJECTS = $(M2_LIB_OBJECTS) $(M2_BUILD_DIR)/test_atv_runner.o $(M2_BUILD_DIR)/echo9_sim_main.o
+M2_LIB = $(M2_BUILD_DIR)/libagentos_sync.a
+
+.PHONY: m2 test-m2 sim-m2 asan-m2 tsan-m2
+
+m2: $(M2_BUILD_DIR)/test_atv $(M2_BUILD_DIR)/echo9_sim
+
+test-m2: m2
+	./$(M2_BUILD_DIR)/test_atv
+
+sim-m2: $(M2_BUILD_DIR)/echo9_sim
+	./$(M2_BUILD_DIR)/echo9_sim
+
+asan-m2:
+	$(MAKE) M2_BUILD_DIR=build/m2-asan M2_SANITIZERS=-fsanitize=address,leak test-m2
+
+tsan-m2:
+	$(MAKE) M2_BUILD_DIR=build/m2-tsan M2_SANITIZERS=-fsanitize=thread test-m2
+
+$(M2_BUILD_DIR):
+	mkdir -p $@
+
+$(M2_BUILD_DIR)/%.o: src/%.c Makefile | $(M2_BUILD_DIR)
+	$(CC) $(M2_CFLAGS) -MMD -MP -c $< -o $@
+
+$(M2_BUILD_DIR)/test_atv_runner.o: tests/test_atv_runner.c Makefile | $(M2_BUILD_DIR)
+	$(CC) $(M2_CFLAGS) -MMD -MP -c $< -o $@
+
+$(M2_LIB): $(M2_LIB_OBJECTS)
+	$(AR) rcs $@ $^
+
+$(M2_BUILD_DIR)/test_atv: $(M2_BUILD_DIR)/test_atv_runner.o $(M2_LIB)
+	$(CC) $(M2_LDFLAGS) $^ -o $@
+
+$(M2_BUILD_DIR)/echo9_sim: $(M2_BUILD_DIR)/echo9_sim_main.o $(M2_LIB)
+	$(CC) $(M2_LDFLAGS) $^ -o $@
+
+-include $(M2_OBJECTS:.o=.d)
