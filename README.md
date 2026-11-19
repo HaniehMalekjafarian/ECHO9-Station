@@ -66,7 +66,7 @@ Read the handout before implementing anything. It contains the full requirements
 
 ### Phase 2 — Concurrent Operations
 
-Read the [Phase 2 handout](handouts/M2_ASSIGNMENT.md) for the student-owned modules, public test cases, and grading rubric. Phase 2 uses the existing source, header, test, and demo directories.
+Read the [Phase 2 handout](handouts/P2_Many_Voices.pdf) for the student-owned modules, public test cases, and grading rubric. Phase 2 uses the existing source, header, test, and demo directories.
 
 In the Ubuntu Dev Container, run `make m2` to build and `make test-m2` to run the 12 public tests. The untouched starter builds, and the tests are expected to fail until the TODOs are implemented.
 
